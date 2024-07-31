@@ -1,6 +1,5 @@
 'use client';
 
-import { ApiResponse } from '@/types/ApiResponse';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -17,6 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { signUpSchema } from '@/schemas/signUpSchema';
 import { signIn } from 'next-auth/react';
+import { ApiResponse } from '@/types/ApiResponse';
 
 export default function SignUpForm() {
   const [username, setUsername] = useState('');
@@ -38,6 +38,7 @@ export default function SignUpForm() {
   });
 
   useEffect(() => {
+   
     const checkUsernameUnique = async () => {
       if (username) {
         setIsCheckingUsername(true);
@@ -93,7 +94,10 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="flex justify-center mx-5 items-center min-h-screen bg-white-800">
+    <div className="flex justify-around mx-5 items-center min-h-screen bg-white">
+        <div className='lg:block sm:hidden md:hidden'> 
+            sign up page
+        </div>
       <div className="w-full max-w-md p-8 space-y-8 bg-gray-200 rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
@@ -139,7 +143,7 @@ export default function SignUpForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <Input {...field} name="email" />
-                  <p className='text-muted text-yellow-600 text-sm'>We will send you a verification code</p>
+                  {/* <p className='text-muted text-yellow-600 text-sm'>We will send you a verification code</p> */}
                   <FormMessage />
                 </FormItem>
               )}
