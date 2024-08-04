@@ -59,10 +59,11 @@ export default function SignInForm() {
         });
       }
     }
-    window.location.reload();
+    
 
     if (result?.ok) {
       router.replace("/dashboard");
+      window.location.reload();
     }
   };
 
