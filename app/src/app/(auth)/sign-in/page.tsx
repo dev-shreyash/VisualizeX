@@ -1,258 +1,168 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { signIn } from 'next-auth/react';
-import {Form,FormField,FormItem,FormLabel,FormMessage} from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
-import { signInSchema } from '@/schemas/signInSchema';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { signIn } from "next-auth/react";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { signInSchema } from "@/schemas/signInSchema";
+import { Loader2, RefreshCcw } from "lucide-react";
+import { useState } from "react";
 
 export default function SignInForm() {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      identifier: '',
-      password: '',
+      identifier: "",
+      password: "",
     },
   });
 
   const { toast } = useToast();
 
-  
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    const result = await signIn('credentials', {
+    setIsLoading(true);
+    const result = await signIn("credentials", {
       redirect: false,
-      identifier: data.identifier,
+      identifier: data.identifier, // use correct field names
       password: data.password,
     });
 
-    console.log(result)
-    console.log(result)
+    console.log(result);
 
     if (result?.error) {
-      if (result.error === 'CredentialsSignin') {
+      if (result.error === "CredentialsSignin") {
         toast({
-          title: 'Login Failed',
-          description: 'Incorrect username or password',
-          variant: 'destructive',
+          title: "Login Failed",
+          description: "Incorrect username or password",
+          variant: "destructive",
         });
       } else {
         toast({
-          title: 'Error',
+          title: "Error",
           description: result.error,
-          variant: 'destructive',
+          variant: "destructive",
         });
       }
     }
+    window.location.reload();
 
-    if (result?.url) {
-      router.replace('/dashboard');
+    if (result?.ok) {
+      router.replace("/dashboard");
+    }
+  };
+
+  const handleOAuthSignIn = async (provider: string) => {
+    const result = await signIn(provider, { callbackUrl: "/dashboard" });
+    console.log(result);
+    if (result?.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <div className="flex justify-center mx-5 items-center min-h-screen bg-white-800">
-      <div className="w-full max-w-md p-8 space-y-8 bg-gray-200  rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-2xl font-extrabold tracking-tight lg:text-5xl mb-6">
-            Welcome Back to Fund Your Homie
-          </h1>
-          <p className="mb-4">Sign in to continue your secret</p>
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              name="identifier"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email/Username</FormLabel>
-                  <Input {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="password"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <Input type="password" {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button className='w-full' type="submit">Sign In</Button>
-          </form>
-        </Form>
-        <div className="text-center mt-4">
-          <p>
-            Not a member yet?{' '}
-            <Link href="/sign-up" className="text-blue-600 hover:text-blue-800">
-              Sign up
-            </Link>
-          </p>
+    <div className="flex justify-center mx-5 items-center min-h-screen h-72 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-purple-600 via-pink-600 to-blue-600">
+      <div className="relative w-full max-w-md p-8 rounded-lg shadow-md">
+        <div className="absolute inset-0 bg-white bg-opacity-35 blur-sm rounded-lg"></div>
+        <div className="relative z-10">
+          <div className="text-center">
+            <h1 className="text-2xl font-extrabold tracking-tight lg:text-5xl mb-6">
+              Welcome Back to VisualizeX
+            </h1>
+            <p className="mb-4">Sign in to continue your learning</p>
+          </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                name="identifier"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email/Username</FormLabel>
+                    <Input
+                      {...field}
+                      name="identifier" // use correct field name
+                      className="appearance-none border-none border-b-2 border-transparent bg-black bg-opacity-20 w-full py-2 px-3 text-white leading-tight focus:outline-none focus-visible:border-gray-500 placeholder:text-gray-300 focus:ring-0"
+                      type="text"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="password"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <Input
+                      {...field}
+                      name="password" // use correct field name
+                      type="password"
+                      className="appearance-none border-none border-b-2 border-transparent bg-black bg-opacity-20 w-full py-2 px-3 text-white leading-tight focus:outline-none focus-visible:border-gray-500 placeholder:text-gray-300 focus:ring-0"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button className="w-full" type="submit">
+                {isLoading &&
+                  <Loader2 className="h-4 w-4 animate-spin ml-3" />
+                }
+                Sign In
+              </Button>
+            </form>
+          </Form>
+          <div className="flex items-center justify-center mt-4">
+            <hr className="w-full border-gray-300" />
+            <span className="px-2 text-gray-500">OR</span>
+            <hr className="w-full border-gray-300" />
+          </div>
+          <div className="flex flex-col space-y-4 mt-4">
+            <Button
+              className="w-full"
+              onClick={() => handleOAuthSignIn("google")}
+            >
+              Sign In with Google
+            </Button>
+            <Button
+              className="w-full"
+              onClick={() => handleOAuthSignIn("github")}
+            >
+              Sign In with GitHub
+            </Button>
+          </div>
+          <div className="text-center mt-4">
+            <p>
+              Not a member yet?{" "}
+              <Link
+                href="/sign-up"
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 'use client';
-
-// import { zodResolver } from '@hookform/resolvers/zod';
-// import { useForm } from 'react-hook-form';
-// import * as z from 'zod';
-// import { signIn } from 'next-auth/react';
-// import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-// import { Button } from '@/components/ui/button';
-// import { Input } from '@/components/ui/input';
-// import Link from 'next/link';
-// import { useRouter } from 'next/navigation';
-// import { useToast } from '@/components/ui/use-toast';
-// import { signInSchema } from '@/schemas/signInSchema';
-
-// export default function SignInForm() {
-//   const router = useRouter();
-
-//   const form = useForm<z.infer<typeof signInSchema>>({
-//     resolver: zodResolver(signInSchema),
-//     defaultValues: {
-//       identifier: '',
-//       password: '',
-//     },
-//   });
-
-//   const { toast } = useToast();
-
-//   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-//     const result = await signIn('credentials', {
-//       redirect: false,
-//       identifier: data.identifier,
-//       password: data.password,
-//     });
-    
-//     console.log(result)
-
-//     if (result?.error) {
-//       if (result.error === 'CredentialsSignin') {
-//         toast({
-//           title: 'Login Failed',
-//           description: 'Incorrect username or password',
-//           variant: 'destructive',
-//         });
-//       } else {
-//         toast({
-//           title: 'Error',
-//           description: result.error,
-//           variant: 'destructive',
-//         });
-//       }
-//     }
-
-//     if (result?.url) {
-//       router.replace('/dashboard');
-//     }
-//   };
-
-//   const handleOAuthSignIn = async (provider: string) => {
-//     const result = await signIn(provider, { callbackUrl: '/dashboard' });
-//     console.log(result)
-//     if (result?.error) {
-//       toast({
-//         title: 'Error',
-//         description: result.error,
-//         variant: 'destructive',
-//       });
-//     }
-//   };
-
-//   return (
-//     <div className="flex justify-center mx-5 items-center min-h-screen bg-white-800">
-//       <div className="w-full max-w-md p-8 space-y-8 bg-gray-200 rounded-lg shadow-md">
-//         <div className="text-center">
-//           <h1 className="text-2xl font-extrabold tracking-tight lg:text-5xl mb-6">
-//             Welcome Back to VisualizeX
-//           </h1>
-//           <p className="mb-4">Sign in to continue your learning</p>
-//         </div>
-//         <Form {...form}>
-//           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-//             <FormField
-//               name="identifier"
-//               control={form.control}
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Email/Username</FormLabel>
-//                   <Input {...field} />
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               name="password"
-//               control={form.control}
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Password</FormLabel>
-//                   <Input type="password" {...field} />
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <Button className='w-full' type="submit">Sign In</Button>
-//           </form>
-//         </Form>
-//         <div className="flex items-center justify-center mt-4">
-//           <hr className="w-full border-gray-300" />
-//           <span className="px-2 text-gray-500">OR</span>
-//           <hr className="w-full border-gray-300" />
-//         </div>
-//         <div className="flex flex-col space-y-4 mt-4">
-//           <Button className="w-full" onClick={() => handleOAuthSignIn('google')}>
-//             Sign In with Google
-//           </Button>
-//           <Button className="w-full" onClick={() => handleOAuthSignIn('github')}>
-//             Sign In with GitHub
-//           </Button>
-//         </div>
-//         <div className="text-center mt-4">
-//           <p>
-//             Not a member yet?{' '}
-//             <Link href="/sign-up" className="text-blue-600 hover:text-blue-800">
-//               Sign up
-//             </Link>
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }

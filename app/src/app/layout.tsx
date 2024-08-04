@@ -7,8 +7,8 @@ import ClientWrapper from './ClientWrapper';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Fund Your Homie',
-  description: 'get real advice from real peoples.',
+  title: 'VisualizeX',
+  description: 'An Algorithmic learning skew.',
 };
 
 interface RootLayoutProps {

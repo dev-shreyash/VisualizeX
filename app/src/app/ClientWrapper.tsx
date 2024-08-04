@@ -1,22 +1,17 @@
-"use client"; // Mark this file as a Client Component
+"use client";
 
-import { usePathname } from 'next/navigation';
+import { SessionProvider } from "next-auth/react";
 import { Toaster } from '@/components/ui/toaster';
 
-
 const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
-    const pathname = usePathname();
-    const noNavbarRoutes = ['/sign-in', '/sign-up'];
-  
-    // const showNavbar = !noNavbarRoutes.some(route => pathname.startsWith(route));
-  
-    return (
+  return (
+    <SessionProvider>
       <>
-        {/* {showNavbar && <Navbar2/>} */}
         {children}
         <Toaster />
       </>
-    );
-  };
-  
-  export default ClientWrapper;
+    </SessionProvider>
+  );
+};
+
+export default ClientWrapper;
