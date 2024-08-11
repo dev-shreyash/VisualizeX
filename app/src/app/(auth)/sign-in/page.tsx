@@ -22,6 +22,8 @@ import { useState } from "react";
 
 export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -124,11 +126,15 @@ export default function SignInForm() {
                   </FormItem>
                 )}
               />
-              <Button className="w-full" type="submit">
-                {isLoading &&
-                  <Loader2 className="h-4 w-4 animate-spin ml-3" />
-                }
-                Sign In
+             <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           </Form>

@@ -14,6 +14,7 @@ const UserDashboard = () => {
 
     if (status === "authenticated") {
       setUserStatus(true);
+      
       console.log("Session data:", session);
     }
   }, [session, status]);
@@ -23,6 +24,8 @@ const UserDashboard = () => {
   }
 
   if (userStatus === false) {
+    router.replace('/sign-in')
+
     return <div>Please log in to view your dashboard</div>;
   }
 
@@ -42,7 +45,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div>
+    <div className='text-blue-200'>
       <h2>User Dashboard</h2>
       <div>
         <h2>Profile</h2>
