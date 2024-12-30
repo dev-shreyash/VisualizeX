@@ -82,9 +82,9 @@ export default function SignInForm() {
   };
 
   return (
-    <div className="flex justify-center mx-5 items-center min-h-screen h-72 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-purple-600 via-pink-600 to-blue-600">
-      <div className="relative w-full max-w-md p-8 rounded-lg shadow-md">
-        <div className="absolute inset-0 bg-white bg-opacity-35 blur-sm rounded-lg"></div>
+    <div className="flex justify-center mx-5 items-center min-h-screen h-72 bg-[#e0e0e0]">
+      <div className="relative w-full max-w-md p-8 rounded-lg shadow-[0_2px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]">
+        <div className="absolute inset-0 bg-white bg-opacity-35  rounded-lg"></div>
         <div className="relative z-10">
           <div className="text-center">
             <h1 className="text-2xl font-extrabold tracking-tight lg:text-5xl mb-6">

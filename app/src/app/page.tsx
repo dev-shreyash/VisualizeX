@@ -9,7 +9,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <main className="flex min-h-screen flex-col items-center text-7xl justify-between p-24 text-white bg-gradient-to-r from-fuchsia-400 via-cyan-400 via-50% to-indigo-600">
+    <main className="flex min-h-screen flex-col items-center text-7xl justify-between p-24 text-white bg-[#e0e0e0]">
      This is home page
 
      <span className="lowercase underline">

@@ -1,0 +1,24 @@
+[
+    {
+      "key": "bubbleSort",
+      "name": "Bubble Sort",
+      "description": "A simple comparison-based sorting algorithm.",
+      "image": "/images/bubbleSort.jpeg",
+      "route": "/visualizer/bubbleSort"
+    },
+    {
+      "key": "mergeSort",
+      "name": "Merge Sort",
+      "description": "A divide-and-conquer sorting algorithm.",
+      "image": "/images/mergeSort.jpeg",
+      "route": "/visualizer/mergeSort"
+    },
+    {
+      "key": "quickSort",
+      "name": "Quick Sort",
+      "description": "An efficient sorting algorithm using partitioning.",
+      "image": "/images/quickSort.jpeg",
+      "route": "/visualizer/quickSort"
+    }
+  ]
+  
