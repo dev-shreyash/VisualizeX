@@ -6,6 +6,7 @@ import { use, useEffect, useState } from "react";
 import EnterDataPopup from "@/components/other/enterDataPopup";
 import Visualizer from "@/components/Algorithm/visualizer"; // Import the Visualizer component
 import CodeTabs from "@/components/other/codetabs";
+import { set } from "zod";
 
 // Interface for the algorithm data
 interface Algorithm {
@@ -37,7 +38,7 @@ export default function AlgorithmVisualization() {
     return storedData ? JSON.parse(storedData) : [];
   });
   const [isSorting, setIsSorting] = useState(false); // State to control sorting
-
+ 
   const handleOpenPopup = () => setShowPopup(true);
   const handleClosePopup = () => setShowPopup(false);
 
@@ -63,7 +64,11 @@ export default function AlgorithmVisualization() {
   };
 
   const handlePauseSorting = () => {
+    if (!isSorting) {
+      return;
+    }
     setIsPaused(true);
+    setIsSorting(false);
   };
 
   const generateSteps = () => {
@@ -84,8 +89,14 @@ export default function AlgorithmVisualization() {
     localStorage.setItem("speed", String(speed));
   }, [speed]);
   const handleSortingComplete = (time: number) => {
-    setSortingTime(time); // Set sorting time in the parent component
+    setSortingTime(time);
+    setIsSorting(false);
+    // Set sorting time in the parent component
   };
+  useEffect(() => {
+    // Reset sorting time when speed changes
+    setSortingTime(null);
+  }, [speed]);
   // Fetch algorithm data from the JSON file
   useEffect(() => {
     const fetchAlgorithmData = async () => {
@@ -146,24 +157,26 @@ export default function AlgorithmVisualization() {
           <div className="relative w-1/2 flex flex-col items-center justify-center group-hover:block">
             <input
               type="range"
-              min="1"
-              max="5"
+              min="0.25"
+              max="1.00"
               value={speed}
+              step="0.25"
               onChange={(e) => setSpeed(Number(e.target.value))}
               className="w-full h-4 bg-gray-300 rounded-lg outline-none opacity-70 transition-opacity duration-200 hover:opacity-100"
               title="Speed Control"
+              disabled={isSorting} // Disable the range input when isSorting is true
             />
             <div className="flex items-center text-sm">Speed</div>
             {/* Tooltip */}
             <div
-              className=" absolute bottom-8 text-sm bg-gray-700 text-white px-2 py-1 rounded shadow-md "
+              className="absolute bottom-8 text-sm bg-gray-700 text-white px-2 py-1 rounded shadow-md"
               style={{
                 marginBottom: "1rem",
-                left: `${(speed - 1) * 25}%`,
+                left: `${((speed - 0.25) * 100) / (1.0 - 0.25)}%`, // Adjusted calculation for 0.25 to 1.00 range
                 transform: "translateX(-50%)",
               }}
             >
-              {speed}x
+              {speed.toFixed(2)}x
             </div>
           </div>
         </div>
@@ -188,12 +201,13 @@ export default function AlgorithmVisualization() {
                   algorithm={algorithmData}
                   onSortingComplete={handleSortingComplete}
                 />
-              
               </div>
-                {/* Display sorting time */}
-                {sortingTime !== null && (
-                  <div className="m-2 flex justify-end">Sorting completed in {sortingTime} seconds.</div>
-                )}
+              {/* Display sorting time */}
+              {sortingTime !== null && (
+                <div className="m-2 flex justify-end">
+                  Sorting completed in {sortingTime} seconds. speed {speed}X
+                </div>
+              )}
             </div>
 
             <div className="flex-1 p-4 border rounded-md shadow-md ">
@@ -202,18 +216,17 @@ export default function AlgorithmVisualization() {
               </h2>
               <div id="arrayView" className="h-64 w-full bg-gray-100">
                 <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
-                <div className="flex flex-wrap gap-2">
-                {userData.map((num, index) => (
-                  <div
-                    key={index}
-                    className="w-10 h-10 flex items-center justify-center border rounded bg-gray-100 text-black"
-                  >
-                    {num}
+                  <div className="flex flex-wrap gap-2">
+                    {userData.map((num, index) => (
+                      <div
+                        key={index}
+                        className="w-10 h-10 flex items-center justify-center border rounded bg-gray-100 text-black"
+                      >
+                        {num}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
                 </div>
-             
               </div>
             </div>
           </div>
@@ -223,7 +236,7 @@ export default function AlgorithmVisualization() {
             <pre className="bg-gray-800 text-white p-4 rounded-md">
               {/* Insert algorithm code here */}
               <div className="flex flex-wrap gap-2">
-                <CodeTabs algorithm={algorithmData}/>
+                <CodeTabs algorithm={algorithmData} />
               </div>
             </pre>
           </div>

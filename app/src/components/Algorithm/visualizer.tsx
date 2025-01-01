@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
-import { set } from "zod";
 
 interface VisualizerProps {
   steps: { array: number[]; highlightedIndices: number[] }[]; // Highlighted indices for the current step
@@ -9,7 +8,6 @@ interface VisualizerProps {
   speed: number;
   userData: number[];
   algorithm: { key: string; name: string; description: string; image: string; route: string };
-  //onSortingComplete: () => void; // Callback when sorting completes
   onSortingComplete: (time: number) => void;  // Callback function to pass data to parent
 }
 
@@ -25,21 +23,22 @@ export default function Visualizer({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [sortingComplete, setSortingComplete] = useState(false);
   const [sortingTime, setSortingTime] = useState<number | null>(null); // State to store sorting time
-useEffect(()=>{
-  setSortingComplete(false);
-},[userData])
 
-useEffect(()=>{
-  setSortingTime(null);
-},[userData])
+  useEffect(() => {
+    setSortingComplete(false);
+  }, [userData]);
 
-useEffect(() => {
-  if (sortingTime !== null) {
-    onSortingComplete(sortingTime);
-  }
-}, [sortingTime]);
+  useEffect(() => {
+    setSortingTime(null);
+  }, [userData]);
 
+  useEffect(() => {
+    if (sortingTime !== null) {
+      onSortingComplete(sortingTime);
+    }
+  }, [sortingTime]);
 
+  // Initial rendering of array
   useEffect(() => {
     const svgContainer = svgRef.current?.parentElement;
     const width = svgContainer?.clientWidth ?? 0;
@@ -56,20 +55,6 @@ useEffect(() => {
       .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background", "#f3f4f6");
 
-    // Create a tooltip element
-    if (!svgContainer) return;
-    const tooltip = d3
-      .select(svgContainer)
-      .append("div")
-      .style("position", "absolute")
-      .style("background", "rgba(0, 0, 0, 0.7)")
-      .style("color", "#fff")
-      .style("padding", "5px 10px")
-      .style("border-radius", "5px")
-      .style("font-size", "12px")
-      .style("pointer-events", "none")
-      .style("opacity", 0);
-
     const renderArray = (data: number[]) => {
       const maxVal = Math.max(...data);
       const barWidth = width / data.length;
@@ -80,32 +65,12 @@ useEffect(() => {
       bars
         .enter()
         .append("rect")
-        .merge(bars) // Handle both entering and updating elements
+        .merge(bars)
         .attr("x", (_, i) => i * barWidth)
         .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight)
         .attr("width", barWidth - 2)
         .attr("height", (d) => (d / maxVal) * maxBarHeight)
-        .attr("fill", "steelblue")
-        .on("mouseover", function (event, d) {
-          // Show tooltip on hover
-          tooltip
-            .style("opacity", 1)
-            .text(d)
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY - 20}px`);
-          d3.select(this).attr("fill", "#e26fff"); // Highlight bar on hover
-        })
-        .on("mousemove", (event) => {
-          // Update tooltip position
-          tooltip
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY - 20}px`);
-        })
-        .on("mouseout", function () {
-          // Hide tooltip and reset bar color
-          tooltip.style("opacity", 0);
-          d3.select(this).attr("fill", "steelblue");
-        });
+        .attr("fill", "steelblue");
 
       // Remove extra bars
       bars.exit().remove();
@@ -113,41 +78,9 @@ useEffect(() => {
 
     // Initial render with userData
     renderArray(userData);
+  }, [userData]);
 
-    // Render sorting steps
-   // let stepIndex = 0;
-    // const renderStep = () => {
-    //   if (isPaused) return;
-    //   const step = steps[stepIndex];
-    //   const maxVal = Math.max(...userData);
-
-    //   const bars = svg.selectAll("rect").data(step.array);
-
-    //   bars
-    //     .transition()
-    //     .duration(speed) // Smooth transitions
-    //     .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight)
-    //     .attr("height", (d) => (d / maxVal) * maxBarHeight)
-    //     .attr("fill", "steelblue");
-
-    //   stepIndex++;
-    //   if (stepIndex < steps.length && isSorting && !isPaused) {
-    //     setTimeout(renderStep, speed);
-    //   }
-    // };
-
-    // if (isSorting && !isPaused) {
-    //   renderStep();
-    // }
-
-    // Cleanup tooltip on unmount
-    // return () => {
-    //   tooltip.remove();
-    // };
-  }, [steps, isSorting, isPaused, speed, userData]);
-
-  const svgRef1 = useRef<SVGSVGElement | null>(null);
-  const [currentSteps, setCurrentSteps] = useState<{ array: number[]; highlightedIndices: number[] }[]>([]);
+  const [currentSteps, setCurrentSteps] = useState<{ array: number[]; highlightedIndices: number[]; pivotIndex: number | null }[]>([]);
   const [sorting, setSorting] = useState(false);
 
   const algorithmMap: Record<string, Function> = {
@@ -160,7 +93,6 @@ useEffect(() => {
   };
 
   const startTimeRef = useRef<number | null>(null);
- 
 
   useEffect(() => {
     const executeAlgorithm = async () => {
@@ -181,12 +113,12 @@ useEffect(() => {
   }, [isSorting, algorithm.key]);
 
   useEffect(() => {
-    const svgContainer = svgRef1.current?.parentElement;
+    const svgContainer = svgRef.current?.parentElement;
     const width = svgContainer?.clientWidth ?? 0;
     const height = svgContainer?.clientHeight ?? 0;
     const maxBarHeight = height;
 
-    const svg = d3.select(svgRef1.current);
+    const svg = d3.select(svgRef.current);
 
     svg
       .attr("width", "100%")
@@ -194,20 +126,8 @@ useEffect(() => {
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background", "#f3f4f6");
-    if (!svgContainer) return;
-    const tooltip = d3
-      .select(svgContainer)
-      .append("div")
-      .style("position", "absolute")
-      .style("background", "rgba(0, 0, 0, 0.7)")
-      .style("color", "#fff")
-      .style("padding", "5px 10px")
-      .style("border-radius", "5px")
-      .style("font-size", "12px")
-      .style("pointer-events", "none")
-      .style("opacity", 0);
 
-    const renderArray = (data: number[], highlightedIndices: number[] = []) => {
+    const renderArrayWithValues = (data: number[], highlightedIndices: number[] = [], pivotIndex: number | null = null) => {
       const maxVal = Math.max(...data);
       const barWidth = width / data.length;
 
@@ -221,41 +141,70 @@ useEffect(() => {
         .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight)
         .attr("width", barWidth - 2)
         .attr("height", (d) => (d / maxVal) * maxBarHeight)
-        .attr("fill", (_, i) => (highlightedIndices.includes(i) ? "#00ff99" : "steelblue")) // Highlight bars
-        .on("mouseover", function (event, d) {
-          tooltip
-            .style("opacity", 1)
-            .text(d)
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY - 20}px`);
-          d3.select(this).attr("fill", "#e26fff");
-        })
-        .on("mousemove", (event) => {
-          tooltip
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY - 20}px`);
-        })
-        .on("mouseout", function (_, i) {
-          tooltip.style("opacity", 0);
-          d3.select(this).attr("fill", highlightedIndices.includes(i) ? "#00ffff" : "steelblue");
-        });
+        .attr("fill", (_, i) => (highlightedIndices.includes(i) ? "#00ff99" : "steelblue"));
 
+      // Add or update pivot point indicator (optional)
+      if (pivotIndex !== null) {
+        // Remove any existing pivot lines before adding new ones
+        svg.selectAll(".pivot").remove();
+
+        svg
+          .selectAll(".pivot")
+          .data([pivotIndex])
+          .enter()
+          .append("line")
+          .merge(svg.selectAll(".pivot"))
+          .attr("x1", (d) => d * barWidth + barWidth / 2)
+          .attr("y1", 0)
+          .attr("x2", (d) => d * barWidth + barWidth / 2)
+          .attr("y2", maxBarHeight)
+          .attr("stroke", "red")
+          .attr("stroke-width", 2)
+          .attr("class", "pivot");
+      }
+
+      // Remove old pivot lines and text elements
       bars.exit().remove();
     };
 
     let stepIndex = 0;
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Renders the current step of the sorting visualization.
+ * 
+ * Checks if sorting is paused or completed. If not, it proceeds to render
+ * the current step's array with highlighted indices and pivot index.
+ * Advances the step index and schedules the next render based on the
+ * specified speed unless the sorting is paused or completed.
+ * 
+ * On completion, updates the sorting state and calculates the elapsed
+ * sorting time.
+ */
+
+/******  abb31234-e77a-4671-9a19-d1ff2c6e798d  *******/
     const renderStep = () => {
-      if (isPaused || !sorting) return;
+      if (isPaused || !isSorting) return;
 
       const step = currentSteps[stepIndex];
-      renderArray(step.array, step.highlightedIndices);
+      renderArrayWithValues(step.array, step.highlightedIndices, step.pivotIndex);
 
       stepIndex++;
       if (stepIndex < currentSteps.length && !isPaused) {
-        setTimeout(renderStep, speed);
+        if (speed === 1) {
+          setTimeout(renderStep, speed); // Adjust the timeout to control the speed of rendering
+        }
+        else if (speed === 0.75) {
+          setTimeout(renderStep, 25/speed); // Adjust the timeout to control the speed of rendering
+        }
+        else if (speed === 0.5) {
+          setTimeout(renderStep, 50/speed); // Adjust the timeout to control the speed of rendering
+        }
+        else if (speed === 0.25) {
+          setTimeout(renderStep, 100/speed); // Adjust the timeout to control the speed of rendering
+        }
       } else {
         setSorting(false);
-        setSortingComplete(true); // Notify parent about completion
+        setSortingComplete(true);
         const endTime = Date.now(); // Capture end time
         const elapsedTime = (endTime - (startTimeRef.current ?? endTime)) / 1000; // Time in seconds
         setSortingTime(elapsedTime); // Set sorting time
@@ -265,18 +214,16 @@ useEffect(() => {
     if (sorting) {
       renderStep();
     }
-  }, [userData,currentSteps, isPaused, sorting, speed,]);
+  }, [currentSteps, isPaused, sorting, speed]);
 
   return (
     <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>
-    {/* Conditionally render SVG elements based on sorting state */}
-    {isSorting || sortingComplete ? (
-      
-      <svg ref={svgRef1} style={{ width: "100%", height: "100%" }} />
-    ) : (
-      <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
-    )}
-     
-  </div>
+      {/* Conditionally render SVG elements based on sorting state */}
+      {isSorting || sortingComplete ? (
+        <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
+      ) : (
+        <svg ref={svgRef} style={{ width: "100%", height: "100%" }} />
+      )}
+    </div>
   );
 }
