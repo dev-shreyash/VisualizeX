@@ -1,6 +1,9 @@
 interface SortStep {
   array: number[];
-  highlightedIndices?: number[]; // Indices to highlight
+  currentLeftIndex?: number;   // Current index being processed from the left side
+  currentRightIndex?: number;  // Current index being processed from the right side
+  comparisonIndices?: number[];  // Indices being compared
+  swappedIndices?: number[];     // Indices that were swapped
   sorted?: boolean;              // Indicates if the array is fully sorted
 }
 
@@ -13,26 +16,27 @@ export function bubbleSort(array: number[]): SortStep[] {
       // Record the current step with highlighted indices for comparison
       steps.push({
         array: [...arr],
-        highlightedIndices: [j, j + 1],
+        currentLeftIndex: j,       // Left index being processed
+        currentRightIndex: j + 1,  // Right index being processed
+        comparisonIndices: [j, j + 1], // Indices being compared
       });
 
       if (arr[j] > arr[j + 1]) {
         // Swap elements
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
 
-        // Record the step with highlighted indices for swap
+        // Record the step with swapped indices
         steps.push({
           array: [...arr],
-          highlightedIndices: [j, j + 1],
+          swappedIndices: [j, j + 1], // Indices that were swapped
         });
       }
     }
   }
 
   // Final state indicating the array is sorted
-  steps.push({ 
-    array: [...arr], 
-    highlightedIndices: [], // No specific indices to highlight in the sorted state
+  steps.push({
+    array: [...arr],
     sorted: true,
   });
 

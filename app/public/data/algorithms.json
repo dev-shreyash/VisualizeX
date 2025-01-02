@@ -7,11 +7,18 @@
       "route": "/visualizer/bubbleSort"
     },
     {
-      "key": "mergeSort",
-      "name": "Merge Sort",
-      "description": "A divide-and-conquer sorting algorithm.",
-      "image": "/images/mergeSort.jpeg",
-      "route": "/visualizer/mergeSort"
+      "key": "mergeSortTopDown",
+      "name": "Merge Sort (Top-Down)",
+      "description": "A divide-and-conquer sorting algorithm.(Top-down)",
+      "image": "/images/mergeSortTopDown.jpeg",
+      "route": "/visualizer/mergeSortTopDown"
+    },
+    {
+      "key": "mergeSortBottomUp",
+      "name": "Merge Sort (Bottom-Up)",
+      "description": "A divide-and-conquer sorting algorithm implemented using the bottom-up approach.",
+      "image": "/images/mergeSortBottomUp.jpeg",
+      "route": "/visualizer/mergeSortBottomUp"
     },
     {
       "key": "quickSort",

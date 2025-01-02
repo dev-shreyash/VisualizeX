@@ -7,6 +7,7 @@ import EnterDataPopup from "@/components/other/enterDataPopup";
 import Visualizer from "@/components/Algorithm/visualizer"; // Import the Visualizer component
 import CodeTabs from "@/components/other/codetabs";
 import { set } from "zod";
+import ArrayVisualizer from "@/components/Algorithm/arrayVisualizer";
 
 // Interface for the algorithm data
 interface Algorithm {
@@ -51,6 +52,9 @@ export default function AlgorithmVisualization() {
   }, [userData]);
 
   const generateArray = () => {
+    if (isSorting) {
+      return;
+    }
     const newArray = Array.from(
       { length: 25 },
       () => Math.floor(Math.random() * 90 + 10) // Generate random 2-digit number (10 to 99)
@@ -61,6 +65,14 @@ export default function AlgorithmVisualization() {
   const resetArray = () => {
     setUserData([]);
     setIsSorting(false); // Reset sorting state
+  };
+
+  const handleStartSorting = () => {
+    if (userData.length === 0) {
+      return
+    }
+    setIsPaused(false);
+    setIsSorting(true);
   };
 
   const handlePauseSorting = () => {
@@ -136,9 +148,9 @@ export default function AlgorithmVisualization() {
         <div className="p-4 border rounded-md shadow-md flex items-center justify-center gap-8">
           <h2 className="text-xl font-semibold mb-4">Controls</h2>
           <div className="container flex gap-2 items-center">
-            <Button onClick={generateArray}>Generate New Array</Button>
+            <Button disabled={isSorting} onClick={generateArray}>Generate New Array</Button>
             OR
-            <Button color="primary" onClick={handleOpenPopup}>
+            <Button disabled={isSorting}  color="primary" onClick={handleOpenPopup}>
               Enter Data
             </Button>
             {showPopup && (
@@ -149,9 +161,9 @@ export default function AlgorithmVisualization() {
             )}
           </div>
 
-          <Button onClick={resetArray}>Reset Array</Button>
-          <Button onClick={() => setIsSorting(true)}>Sort Array</Button>
-          <Button onClick={() => setIsSorting(true)}>Play</Button>
+          <Button disabled={isSorting}  onClick={resetArray}>Reset Array</Button>
+          <Button disabled={isSorting}  onClick={handleStartSorting}>Sort Array</Button>
+          <Button disabled={isSorting}  onClick={handleStartSorting}>Play</Button>
           <Button onClick={handlePauseSorting}>Pause</Button>
 
           <div className="relative w-1/2 flex flex-col items-center justify-center group-hover:block">
@@ -201,6 +213,7 @@ export default function AlgorithmVisualization() {
                   algorithm={algorithmData}
                   onSortingComplete={handleSortingComplete}
                 />
+                
               </div>
               {/* Display sorting time */}
               {sortingTime !== null && (
@@ -215,6 +228,14 @@ export default function AlgorithmVisualization() {
                 Array Visualization
               </h2>
               <div id="arrayView" className="h-64 w-full bg-gray-100">
+                <ArrayVisualizer 
+                steps={steps}
+                isSorting={isSorting}
+                isPaused={isPaused}
+                speed={speed}
+                userData={userData}
+                algorithm={algorithmData}
+                />
                 <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
                     {userData.map((num, index) => (

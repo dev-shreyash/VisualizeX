@@ -1,12 +1,15 @@
 interface SortStep {
   array: number[];
-  highlightedIndices?: number[]; // Indices to highlight
-  merged?: [number, number];     // Range of indices being merged
-  sorted?: boolean;              // Indicates if the array is fully sorted
-  pivot?: number;                // The pivot point (for visualization)
+  currentLeftIndex?: number; // Current index of the left array being processed
+  currentRightIndex?: number; // Current index of the right array being processed
+  comparison?: [number, number]; // Indices being compared
+  swapped?: [number, number]; // Indices that were swapped
+  merged?: [number, number]; // Range of indices being merged
+  sorted?: boolean; // Indicates if the array is fully sorted
+  pivot?: number; // The pivot point (for visualization)
 }
 
-export function mergeSort(array: number[]): SortStep[] {
+export function mergeSortTopDown(array: number[]): SortStep[] {
   const steps: SortStep[] = [];
 
   function merge(arr: number[], left: number, mid: number, right: number): void {
@@ -18,16 +21,28 @@ export function mergeSort(array: number[]): SortStep[] {
       k = left;
 
     while (i < leftArray.length && j < rightArray.length) {
-      // Record comparison step with highlighted indices
+      // Record comparison step with separate indices
       steps.push({
         array: [...arr],
-        highlightedIndices: [k, k + 1], // Highlight indices being compared
+        comparison: [left + i, mid + 1 + j], // Highlight the indices being compared
+        currentLeftIndex: left + i, // Left index being processed
+        currentRightIndex: mid + 1 + j, // Right index being processed
       });
 
       if (leftArray[i] <= rightArray[j]) {
         arr[k++] = leftArray[i++];
+        // Record swapped step
+        steps.push({
+          array: [...arr],
+          swapped: [k - 1, left + i - 1], // Highlight the swapped indices
+        });
       } else {
         arr[k++] = rightArray[j++];
+        // Record swapped step
+        steps.push({
+          array: [...arr],
+          swapped: [k - 1, mid + 1 + j - 1], // Highlight the swapped indices
+        });
       }
     }
 
@@ -35,7 +50,7 @@ export function mergeSort(array: number[]): SortStep[] {
     while (i < leftArray.length) {
       steps.push({
         array: [...arr],
-        highlightedIndices: [k], // Highlight the single index being added
+        currentLeftIndex: left + i, // Highlight the current left index
       });
       arr[k++] = leftArray[i++];
     }
@@ -44,7 +59,7 @@ export function mergeSort(array: number[]): SortStep[] {
     while (j < rightArray.length) {
       steps.push({
         array: [...arr],
-        highlightedIndices: [k], // Highlight the single index being added
+        currentRightIndex: mid + 1 + j, // Highlight the current right index
       });
       arr[k++] = rightArray[j++];
     }
@@ -52,7 +67,6 @@ export function mergeSort(array: number[]): SortStep[] {
     // Record merged step with range
     steps.push({
       array: [...arr],
-      highlightedIndices: Array.from({ length: right - left + 1 }, (_, idx) => left + idx), // Highlight the merged range
       merged: [left, right],
     });
   }
@@ -62,11 +76,10 @@ export function mergeSort(array: number[]): SortStep[] {
 
     const mid = Math.floor((left + right) / 2);
 
-    // Highlight the mid index as the "pivot" during each division
+    // Highlight the mid index during each division
     steps.push({
       array: [...arr],
-      highlightedIndices: [mid], // Highlight the mid index as the pivot
-      pivot: mid,               // Mark the pivot for visualization
+      pivot: mid, // Mark the pivot for visualization
     });
 
     sort(arr, left, mid);
@@ -77,9 +90,9 @@ export function mergeSort(array: number[]): SortStep[] {
   const arr = [...array];
   sort(arr, 0, arr.length - 1);
 
+  // Final sorted state
   steps.push({
     array: [...arr],
-    highlightedIndices: [], // No specific indices to highlight
     sorted: true,
   });
 
