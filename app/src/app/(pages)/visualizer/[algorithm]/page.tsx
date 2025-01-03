@@ -56,7 +56,7 @@ export default function AlgorithmVisualization() {
       return;
     }
     const newArray = Array.from(
-      { length: 25 },
+      { length: 15 },
       () => Math.floor(Math.random() * 90 + 10) // Generate random 2-digit number (10 to 99)
     );
     setUserData(newArray);
@@ -161,10 +161,10 @@ export default function AlgorithmVisualization() {
             )}
           </div>
 
-          <Button disabled={isSorting}  onClick={resetArray}>Reset Array</Button>
-          <Button disabled={isSorting}  onClick={handleStartSorting}>Sort Array</Button>
-          <Button disabled={isSorting}  onClick={handleStartSorting}>Play</Button>
-          <Button onClick={handlePauseSorting}>Pause</Button>
+          <Button disabled={isSorting || userData.length === 0}  onClick={resetArray}>Clear Array</Button>
+          <Button disabled={isSorting || userData.length === 0}  onClick={handleStartSorting}>Sort Array</Button>
+          <Button disabled={isSorting || userData.length === 0}  onClick={handleStartSorting}>Play</Button>
+          <Button disabled={!isSorting || userData.length === 0} onClick={handlePauseSorting}>Pause</Button>
 
           <div className="relative w-1/2 flex flex-col items-center justify-center group-hover:block">
             <input
@@ -227,7 +227,7 @@ export default function AlgorithmVisualization() {
               <h2 className="text-xl font-semibold mb-4">
                 Array Visualization
               </h2>
-              <div id="arrayView" className="h-64 w-full bg-gray-100">
+              <div id="arrayView" className="h-14 w-full p-4 bg-gray-100">
                 <ArrayVisualizer 
                 steps={steps}
                 isSorting={isSorting}
@@ -236,7 +236,7 @@ export default function AlgorithmVisualization() {
                 userData={userData}
                 algorithm={algorithmData}
                 />
-                <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
+                {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
                     {userData.map((num, index) => (
                       <div
@@ -247,7 +247,7 @@ export default function AlgorithmVisualization() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

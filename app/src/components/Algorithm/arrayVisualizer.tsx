@@ -1,7 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 
 interface VisualizerProps {
-  steps: { array: number[]; highlightedIndices: number[] }[]; // Highlighted indices for the current step
+  steps: {
+    array: number[];
+    highlightedIndices: number[];
+    currentLeftIndex?: number;
+    currentRightIndex?: number;
+    pivot?: number;
+    comparison?: [number, number];
+    swapped?: [number, number];
+    merged?: [number, number];
+    sorted?: boolean;
+  }[]; // Highlighted indices for the current step
   isSorting: boolean;
   isPaused: boolean;
   speed: number;
@@ -37,19 +47,9 @@ export default function Visualizer({
 
   useEffect(() => {
     setSortingComplete(false);
-  }, [userData]);
-
-  useEffect(() => {
     setSortingTime(null);
   }, [userData]);
 
-//   useEffect(() => {
-//     if (sortingTime !== null) {
-//       onSortingComplete(sortingTime);
-//     }
-//   }, [sortingTime]);
-
-  // Algorithm handler
   const algorithmMap: Record<string, Function> = {
     bubbleSort: async (data: number[]) =>
       (await import("@/utils/algorithms/bubbleSort")).bubbleSort(data),
@@ -82,37 +82,16 @@ export default function Visualizer({
     }
   }, [isSorting, algorithm.key]);
 
-  const renderStep = (step: any) => {
-    if (!step) return null; // Check if step is defined
-
-    return step.array.map((num: number, index: number) => {
-        // Check if the current index matches either left or right indices
-        const isHighlighted =
-          index === step.currentLeftIndex || index === step.currentRightIndex;
-      
-        return (
-            
-          <div
-            key={index}
-            className={`w-5 h-5 flex items-center justify-center text-sm p-0 rounded-md border ${
-              isHighlighted ? "bg-yellow-500" : "bg-gray-300"
-            }`}
-          >
-            {num}
-          </div>
-        );
-      });
-      
-  };
-
   useEffect(() => {
     let stepIndex = 0;
 
     const renderAlgorithmSteps = () => {
-      if (isPaused || !isSorting || currentSteps.length === 0) return; // Added check for empty steps
+      if (userData.length ===0) return ;
+      if (userData.length > 20) return;
+      if (isPaused || !isSorting || currentSteps.length === 0) return;
 
       const currentStep = currentSteps[stepIndex];
-      if (!currentStep) return; // Added check for undefined currentStep
+      if (!currentStep) return;
 
       setCurrentSteps([currentStep]);
 
@@ -126,7 +105,8 @@ export default function Visualizer({
       } else {
         setSortingComplete(true);
         const endTime = Date.now();
-        const elapsedTime = (endTime - (startTimeRef.current ?? endTime)) / 1000;
+        const elapsedTime =
+          (endTime - (startTimeRef.current ?? endTime)) / 1000;
         setSortingTime(elapsedTime);
       }
     };
@@ -135,25 +115,70 @@ export default function Visualizer({
       renderAlgorithmSteps();
     }
   }, [currentSteps, isPaused, isSorting, speed]);
+ 
 
+  if (userData.length > 20) {
+    return <div>Array too large to visualize</div>;
+  }
   return (
     <div className="flex flex-col justify-center items-center w-full h-full">
-      <div className="flex space-x-1">
-        {currentSteps.length > 0 && renderStep(currentSteps[0])}
-      </div>
+      {/* Conditionally render based on isSorting */}
+      {isSorting || sortingComplete ? (
+        <div className="flex flex-col items-center space-y-4 w-full">
+          {/* Render current step array */}
+          <div className="flex space-x-1 w-full justify-around">
+            {currentSteps.length > 0 &&
+              currentSteps[0].array.map((num, index) => {
+                // Determine the background color based on conditions
+                const getBackgroundColor = (i: number): string => {
+                  if (currentSteps[0]?.sorted) return "green"; // Highlight sorted indices in green
+                  if (i === currentSteps[0]?.pivotIndex) return "#ffcc00"; // Highlight pivot index in yellow
+                  if (currentSteps[0]?.comparison?.includes(i)) return "pink"; // Highlight comparison indices in pink
+                  if (currentSteps[0]?.swapped?.includes(i)) return "#ff5733"; // Highlight swapped indices in red
+                  if (i === currentSteps[0]?.currentLeftIndex) return "#ff5733"; // Highlight left index in blue
+                  if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light blue
+                  return "#e5e7eb"; // Default color
+                };
+                const getTextColor = (i: number): string => {
+                  if (currentSteps[0]?.sorted)
+                    { 
+                      return "#fff";
+                    }
+                  else {return "#000"; }
+                  // Highlight sorted indices in green
+                  // if (i === currentSteps[0]?.pivotIndex) return "#ffcc00"; // Highlight pivot index in yellow
+                  // if (currentSteps[0]?.comparison?.includes(i)) return "pink"; // Highlight comparison indices in pink
+                  // if (currentSteps[0]?.swapped?.includes(i)) return "#ff5733"; // Highlight swapped indices in red
+                  // if (i === currentSteps[0]?.currentLeftIndex) return "#1e90ff"; // Highlight left index in blue
+                  // if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light blue
+                  
+                };
+                
 
-      <div className="flex w-full justify-around mt-4">
-        {userData.map((num, index) => (
-          <div
-            key={index}
-            className="w-10 h-10 flex items-center justify-center text-sm p-0 border rounded-md bg-gray-200"
-          >
-            {num}
+                return (
+                  <div
+                    key={index}
+                    className="w-5 h-5 flex items-center justify-center text-sm p-0 rounded-md border"
+                    style={{ backgroundColor: getBackgroundColor(index), color: getTextColor(index) }}
+                  >
+                    {num}
+                  </div>
+                );
+              })}
           </div>
-        ))}
-      </div>
-
-    
+        </div>
+      ) : (
+        <div className="flex space-x-1 w-full justify-around">
+          {userData.map((num, index) => (
+            <div
+              key={index}
+              className="w-5 h-5 flex items-center justify-center text-sm p-0 border rounded-md bg-gray-200"
+            >
+              {num}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

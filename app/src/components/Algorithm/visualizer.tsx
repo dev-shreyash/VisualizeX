@@ -62,6 +62,21 @@ export default function Visualizer({
       .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background", "#f3f4f6");
 
+
+        // Create a tooltip element
+        if (!svgContainer) return;
+        const tooltip = d3
+          .select(svgContainer)
+          .append("div")
+          .style("position", "absolute")
+          .style("background", "rgba(0, 0, 0, 0.7)")
+          .style("color", "#fff")
+          .style("padding", "5px 10px")
+          .style("border-radius", "5px")
+          .style("font-size", "12px")
+          .style("pointer-events", "none")
+          .style("opacity", 0);
+
     const renderArray = (data: number[]) => {
       const maxVal = Math.max(...data);
       const barWidth = width / data.length;
@@ -77,7 +92,27 @@ export default function Visualizer({
         .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight)
         .attr("width", barWidth - 2)
         .attr("height", (d) => (d / maxVal) * maxBarHeight)
-        .attr("fill", "steelblue");
+        .attr("fill", "steelblue")
+        .on("mouseover", function (event, d) {
+          // Show tooltip on hover
+          tooltip
+            .style("opacity", 1)
+            .text(d)
+            .style("left", `${event.pageX + 10}px`)
+            .style("top", `${event.pageY - 20}px`);
+          d3.select(this).attr("fill", "#4ade80"); // Highlight bar on hover
+        })
+        .on("mousemove", (event) => {
+          // Update tooltip position
+          tooltip
+            .style("left", `${event.pageX + 10}px`)
+            .style("top", `${event.pageY - 20}px`);
+        })
+        .on("mouseout", function () {
+          // Hide tooltip and reset bar color
+          tooltip.style("opacity", 0);
+          d3.select(this).attr("fill", "steelblue");
+        });
 
       //   // Add the value text inside each bar
       //   bars
@@ -206,7 +241,7 @@ export default function Visualizer({
       swapped?: [number, number] | null;
       merged?: [number, number] | null;
     }) => {
-      console.log(swapped);
+     // console.log(swapped);
       const maxVal = Math.max(...data);
       const barWidth = width / data.length;
 
