@@ -1,31 +1,44 @@
 [
-    {
-      "key": "bubbleSort",
-      "name": "Bubble Sort",
-      "description": "A simple comparison-based sorting algorithm.",
-      "image": "/images/bubbleSort.jpeg",
-      "route": "/visualizer/bubbleSort"
-    },
-    {
-      "key": "mergeSortTopDown",
-      "name": "Merge Sort (Top-Down)",
-      "description": "A divide-and-conquer sorting algorithm.(Top-down)",
-      "image": "/images/mergeSortTopDown.jpeg",
-      "route": "/visualizer/mergeSortTopDown"
-    },
-    {
-      "key": "mergeSortBottomUp",
-      "name": "Merge Sort (Bottom-Up)",
-      "description": "A divide-and-conquer sorting algorithm implemented using the bottom-up approach.",
-      "image": "/images/mergeSortBottomUp.jpeg",
-      "route": "/visualizer/mergeSortBottomUp"
-    },
-    {
-      "key": "quickSort",
-      "name": "Quick Sort",
-      "description": "An efficient sorting algorithm using partitioning.",
-      "image": "/images/quickSort.jpeg",
-      "route": "/visualizer/quickSort"
-    }
-  ]
-  
+  {
+    "key": "bubbleSort",
+    "name": "Bubble Sort",
+    "description": "A simple comparison-based sorting algorithm.",
+    "image": "/images/bubbleSort.jpeg",
+    "route": "/visualizer/bubbleSort"
+  },
+  {
+    "key": "mergeSortTopDown",
+    "name": "Merge Sort (Top-Down)",
+    "description": "A divide-and-conquer sorting algorithm.(Top-down)",
+    "image": "/images/mergeSortTopDown.jpeg",
+    "route": "/visualizer/mergeSortTopDown"
+  },
+  {
+    "key": "mergeSortBottomUp",
+    "name": "Merge Sort (Bottom-Up)",
+    "description": "A divide-and-conquer sorting algorithm implemented using the bottom-up approach.",
+    "image": "/images/mergeSortBottomUp.jpeg",
+    "route": "/visualizer/mergeSortBottomUp"
+  },
+  {
+    "key": "quickSort",
+    "name": "Quick Sort",
+    "description": "An efficient sorting algorithm using partitioning.",
+    "image": "/images/quickSort.jpeg",
+    "route": "/visualizer/quickSort"
+  },
+  {
+    "key": "selectionSort",
+    "name": "Selection Sort",
+    "description": "A simple in-place comparison-based sorting algorithm.",
+    "image": "/images/selectionSort.jpeg",
+    "route": "/visualizer/selectionSort"
+  },
+  {
+    "key": "insertionSort",
+    "name": "Insertion Sort",
+    "description": "An efficient algorithm for small or partially sorted arrays.",
+    "image": "/images/insertionSort.jpeg",
+    "route": "/visualizer/insertionSort"
+  }
+]

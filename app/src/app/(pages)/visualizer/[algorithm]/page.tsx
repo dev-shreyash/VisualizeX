@@ -155,7 +155,7 @@ export default function AlgorithmVisualization() {
 
       <div className="flex flex-col gap-8">
         {/* Control Panel */}
-        <div className="p-4 border rounded-md shadow-md flex items-center justify-center gap-8">
+        <div className="p-4 border rounded-md shadow-md flex m-auto w-[80%] items-center justify-center gap-8">
           <h2 className="text-xl font-semibold mb-4">Controls</h2>
           <div className="container flex gap-2 items-center">
             <Button disabled={isSorting} onClick={generateArray}>Generate New Array</Button>
@@ -263,9 +263,9 @@ export default function AlgorithmVisualization() {
             </div>
             <div className="flex-1 p-4 border rounded-md shadow-md ">
               <h2 className="text-xl font-semibold mb-4">
-                Log Viewer
+                Steps Viewer
               </h2>
-              <div id="LogView" className=" w-full p-4 bg-gray-100">
+              <div id="LogView" className=" w-full  bg-gray-100">
                 <LogViewer 
                 steps={steps}
                 isSorting={isSorting}

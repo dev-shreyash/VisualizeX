@@ -17,7 +17,6 @@ interface VisualizerProps {
   };
   onSortingComplete: (time: number) => void; // Callback function to pass data to parent
   currentSteps: (array: number[]) => void; // send steps back
-  
 }
 
 export default function Visualizer({
@@ -64,20 +63,19 @@ export default function Visualizer({
       .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background", "#f3f4f6");
 
-
-        // Create a tooltip element
-        if (!svgContainer) return;
-        const tooltip = d3
-          .select(svgContainer)
-          .append("div")
-          .style("position", "absolute")
-          .style("background", "rgba(0, 0, 0, 0.7)")
-          .style("color", "#fff")
-          .style("padding", "5px 10px")
-          .style("border-radius", "5px")
-          .style("font-size", "12px")
-          .style("pointer-events", "none")
-          .style("opacity", 0);
+    // Create a tooltip element
+    if (!svgContainer) return;
+    const tooltip = d3
+      .select(svgContainer)
+      .append("div")
+      .style("position", "absolute")
+      .style("background", "rgba(0, 0, 0, 0.7)")
+      .style("color", "#fff")
+      .style("padding", "5px 10px")
+      .style("border-radius", "5px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
 
     const renderArray = (data: number[]) => {
       const maxVal = Math.max(...data);
@@ -186,7 +184,11 @@ export default function Visualizer({
     mergeSortBottomUp: async (data: number[]) =>
       (await import("@/utils/algorithms/mergeSortBottomUp")).mergeSortBottomUp(
         data
-    )
+      ),
+      selectionSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/selectionSort")).selectionSort(data),
+      insertionSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/insertionSort")).insertionSort(data),
   };
 
   const startTimeRef = useRef<number | null>(null);
@@ -243,7 +245,7 @@ export default function Visualizer({
       swapped?: [number, number] | null;
       merged?: [number, number] | null;
     }) => {
-     // console.log(swapped);
+      // console.log(swapped);
       const maxVal = Math.max(...data);
       const barWidth = width / data.length;
 

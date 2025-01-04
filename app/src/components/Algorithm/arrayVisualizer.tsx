@@ -63,6 +63,10 @@ export default function Visualizer({
       (await import("@/utils/algorithms/mergeSortBottomUp")).mergeSortBottomUp(
         data
       ),
+      selectionSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/selectionSort")).selectionSort(data),
+      insertionSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/insertionSort")).insertionSort(data),
   };
 
   useEffect(() => {
@@ -116,6 +120,7 @@ export default function Visualizer({
     }
   }, [currentSteps, isPaused, isSorting, speed]);
  
+  const stepDuration = speed === 1 ? 20 : speed === 0.75 ? 50 : speed === 0.5 ? 100 : 300;
 
   if (userData.length > 20) {
     return <div>Array too large to visualize</div>;
@@ -133,11 +138,11 @@ export default function Visualizer({
                 const getBackgroundColor = (i: number): string => {
                   if (currentSteps[0]?.sorted) return "green"; // Highlight sorted indices in green
                   if (i === currentSteps[0]?.pivot) return "#ffcc00"; // Highlight pivot index in yellow
-                  if (i === currentSteps[0]?.currentLeftIndex) return "#ff5733"; // Highlight left index in blue
-                  if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light blue
+                  if (i === currentSteps[0]?.currentLeftIndex) return "#ff5733"; // Highlight left index in 
+                  if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light 
                  // if (currentSteps[0]?.merged?.includes(i)) return "blue"; // Highlight merged indices in blue
-                  if (currentSteps[0]?.comparison?.includes(i)) return "black"; // Highlight comparison indices in pink
-                  if (currentSteps[0]?.swapped?.includes(i)) return "#ff5733"; // Highlight swapped indices in red
+                  if (currentSteps[0]?.comparison?.includes(i)) return "green"; // Highlight comparison indices in
+                  if (currentSteps[0]?.swapped?.includes(i)) return "black"; 
                  return "#e5e7eb"; // Default color
                 };
                 const getTextColor = (i: number): string => {
@@ -155,7 +160,7 @@ export default function Visualizer({
                     }
                   if (currentSteps[0]?.swapped?.includes(i))
                     { 
-                      return "#000";
+                      return "#fff";
                     }
                   if (i === currentSteps[0]?.currentLeftIndex)
                     { 
@@ -179,8 +184,10 @@ export default function Visualizer({
                 return (
                   <div
                     key={index}
-                    className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300 "
-                    style={{ backgroundColor: getBackgroundColor(index), color: getTextColor(index) }}
+                    className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300"
+                    style={{ backgroundColor: getBackgroundColor(index), color: getTextColor(index),                      
+                      transition: `all ${stepDuration}ms ease-in-out`,
+                    }}
                   >
                     {num}
                   </div>

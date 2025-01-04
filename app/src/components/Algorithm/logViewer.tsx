@@ -71,6 +71,10 @@ export default function LogViewer({
       (await import("@/utils/algorithms/mergeSortBottomUp")).mergeSortBottomUp(
         data
       ),
+      selectionSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/selectionSort")).selectionSort(data),
+      insertionSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/insertionSort")).insertionSort(data),
   };
 
   // Execute the algorithm when sorting starts
@@ -102,27 +106,26 @@ export default function LogViewer({
 
     const messages: string[] = [];
     if (currentStep.pivot !== undefined) {
-      messages.push(`Pivot element is at index ${currentStep.pivot}.`);
+      messages.push(`Pivot ${currentSteps?.[stepIndexRef.current]?.array[currentStep.pivot]} element is at index ${currentStep.pivot}.`);
     }
     if (currentStep.currentLeftIndex !== undefined) {
-      messages.push(`Left pointer is at index ${currentStep.currentLeftIndex}.`);
+      messages.push(`Left pointer ${currentSteps?.[stepIndexRef.current]?.array[currentStep.currentLeftIndex]} is at index ${currentStep.currentLeftIndex}.`);
     }
     if (currentStep.currentRightIndex !== undefined) {
-      messages.push(`Right pointer is at index ${currentStep.currentRightIndex}.`);
+      messages.push(`Right pointer ${currentSteps?.[stepIndexRef.current]?.array[currentStep.currentRightIndex]} is at index ${currentStep.currentRightIndex}.`);
     }
     if (currentStep.comparison) {
       messages.push(
-        `Comparing elements at indices ${currentStep.comparison[0]} and ${currentStep.comparison[1]}.`
-      );
+        `Comparing elements ${currentSteps?.[stepIndexRef.current]?.array[currentStep.comparison[0]]} and ${currentSteps?.[stepIndexRef.current]?.array[currentStep.comparison[1]]} at indices ${currentStep.comparison[0]} and ${currentStep.comparison[1]}.` );
     }
     if (currentStep.swapped) {
       messages.push(
-        `Swapped elements at indices ${currentStep.swapped[0]} and ${currentStep.swapped[1]}.`
+        `Swapped elements ${currentSteps?.[stepIndexRef.current]?.array[currentStep.swapped[0]]} and ${currentSteps?.[stepIndexRef.current]?.array[currentStep.swapped[1]]} at indices ${currentStep.swapped[0]} and ${currentStep.swapped[1]}.`
       );
     }
     if (currentStep.merged) {
       messages.push(
-        `Merged elements from indices ${currentStep.merged[0]} to ${currentStep.merged[1]}.`
+        `Merged elements ${currentSteps?.[stepIndexRef.current]?.array[currentStep.merged[0]]} and ${currentSteps?.[stepIndexRef.current]?.array[currentStep.merged[1]]} from indices ${currentStep.merged[0]} to ${currentStep.merged[1]}.`
       );
     }
     return `Step ${stepIndexRef.current}: ${messages.join(" ")}`;
@@ -164,7 +167,7 @@ export default function LogViewer({
   }, [currentSteps, isPaused, isSorting, speed]);
 
   return (
-    <div className="flex flex-col items-center w-full h-64 p-4 bg-gray-100 overflow-hidden border-2 border-gray-300 rounded-md">
+    <div className="flex flex-col items-center w-full h-64 p-4 bg-gray-800 overflow-hidden   rounded-md">
       <div
         ref={logContainerRef}
         className="flex flex-col space-y-2 w-full overflow-auto max-h-full"
@@ -173,7 +176,7 @@ export default function LogViewer({
           logs.map((log, index) => (
             <div
               key={index}
-              className="p-2 bg-white border rounded shadow-sm text-sm"
+              className="p-2 text-white rounded shadow-sm text-sm"
             >
               {log}
             </div>
