@@ -126,23 +126,44 @@ export default function Visualizer({
       {isSorting || sortingComplete ? (
         <div className="flex flex-col items-center space-y-4 w-full">
           {/* Render current step array */}
-          <div className="flex space-x-1 w-full justify-around">
-            {currentSteps.length > 0 &&
+          <div className="flex  w-full justify-around border-2 ">
+          {currentSteps.length > 0 &&
               currentSteps[0].array.map((num, index) => {
                 // Determine the background color based on conditions
                 const getBackgroundColor = (i: number): string => {
                   if (currentSteps[0]?.sorted) return "green"; // Highlight sorted indices in green
-                  if (i === currentSteps[0]?.pivotIndex) return "#ffcc00"; // Highlight pivot index in yellow
-                  if (currentSteps[0]?.comparison?.includes(i)) return "pink"; // Highlight comparison indices in pink
-                  if (currentSteps[0]?.swapped?.includes(i)) return "#ff5733"; // Highlight swapped indices in red
+                  if (i === currentSteps[0]?.pivot) return "#ffcc00"; // Highlight pivot index in yellow
                   if (i === currentSteps[0]?.currentLeftIndex) return "#ff5733"; // Highlight left index in blue
                   if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light blue
-                  return "#e5e7eb"; // Default color
+                 // if (currentSteps[0]?.merged?.includes(i)) return "blue"; // Highlight merged indices in blue
+                  if (currentSteps[0]?.comparison?.includes(i)) return "black"; // Highlight comparison indices in pink
+                  if (currentSteps[0]?.swapped?.includes(i)) return "#ff5733"; // Highlight swapped indices in red
+                 return "#e5e7eb"; // Default color
                 };
                 const getTextColor = (i: number): string => {
                   if (currentSteps[0]?.sorted)
                     { 
                       return "#fff";
+                    }
+                  if (i === currentSteps[0]?.pivot)
+                    { 
+                      return "#000";
+                    }
+                  if (currentSteps[0]?.comparison?.includes(i))
+                    { 
+                      return "#fff";
+                    }
+                  if (currentSteps[0]?.swapped?.includes(i))
+                    { 
+                      return "#000";
+                    }
+                  if (i === currentSteps[0]?.currentLeftIndex)
+                    { 
+                      return "#000";
+                    }
+                  if (i === currentSteps[0]?.currentRightIndex)
+                    { 
+                      return "#000";
                     }
                   else {return "#000"; }
                   // Highlight sorted indices in green
@@ -158,7 +179,7 @@ export default function Visualizer({
                 return (
                   <div
                     key={index}
-                    className="w-5 h-5 flex items-center justify-center text-sm p-0 rounded-md border"
+                    className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300 "
                     style={{ backgroundColor: getBackgroundColor(index), color: getTextColor(index) }}
                   >
                     {num}
@@ -168,12 +189,12 @@ export default function Visualizer({
           </div>
         </div>
       ) : (
-        <div className="flex space-x-1 w-full justify-around">
+        <div className="flex  w-full justify-around border-2 ">
           {userData.map((num, index) => (
             <div
               key={index}
-              className="w-5 h-5 flex items-center justify-center text-sm p-0 border rounded-md bg-gray-200"
-            >
+              className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300 bg-[#e5e7eb] "
+              >
               {num}
             </div>
           ))}

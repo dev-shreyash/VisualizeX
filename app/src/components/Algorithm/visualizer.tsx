@@ -16,6 +16,8 @@ interface VisualizerProps {
     route: string;
   };
   onSortingComplete: (time: number) => void; // Callback function to pass data to parent
+  currentSteps: (array: number[]) => void; // send steps back
+  
 }
 
 export default function Visualizer({

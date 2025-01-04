@@ -8,7 +8,7 @@ import Visualizer from "@/components/Algorithm/visualizer"; // Import the Visual
 import CodeTabs from "@/components/other/codetabs";
 import { set } from "zod";
 import ArrayVisualizer from "@/components/Algorithm/arrayVisualizer";
-
+import LogViewer from "@/components/Algorithm/logViewer";
 // Interface for the algorithm data
 interface Algorithm {
   key: string;
@@ -39,6 +39,8 @@ export default function AlgorithmVisualization() {
     return storedData ? JSON.parse(storedData) : [];
   });
   const [isSorting, setIsSorting] = useState(false); // State to control sorting
+
+  const [currentSteps, setCurrentSteps] = useState<{ array: number[] }[]>([]);
  
   const handleOpenPopup = () => setShowPopup(true);
   const handleClosePopup = () => setShowPopup(false);
@@ -52,6 +54,8 @@ export default function AlgorithmVisualization() {
   }, [userData]);
 
   const generateArray = () => {
+    setIsSorting(false);
+    setSortingTime(null);
     if (isSorting) {
       return;
     }
@@ -105,6 +109,12 @@ export default function AlgorithmVisualization() {
     setIsSorting(false);
     // Set sorting time in the parent component
   };
+
+  // const handleCurrentSteps = (array: number[]) => {
+  //   setCurrentSteps([{ array }]); 
+  // }
+
+
   useEffect(() => {
     // Reset sorting time when speed changes
     setSortingTime(null);
@@ -223,12 +233,40 @@ export default function AlgorithmVisualization() {
               )}
             </div>
 
+          
             <div className="flex-1 p-4 border rounded-md shadow-md ">
               <h2 className="text-xl font-semibold mb-4">
                 Array Visualization
               </h2>
               <div id="arrayView" className="h-14 w-full p-4 bg-gray-100">
                 <ArrayVisualizer 
+                steps={steps}
+                isSorting={isSorting}
+                isPaused={isPaused}
+                speed={speed}
+                userData={userData}
+                algorithm={algorithmData}
+                />
+                {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
+                  <div className="flex flex-wrap gap-2">
+                    {userData.map((num, index) => (
+                      <div
+                        key={index}
+                        className="w-10 h-10 flex items-center justify-center border rounded bg-gray-100 text-black"
+                      >
+                        {num}
+                      </div>
+                    ))}
+                  </div>
+                </div> */}
+              </div>
+            </div>
+            <div className="flex-1 p-4 border rounded-md shadow-md ">
+              <h2 className="text-xl font-semibold mb-4">
+                Log Viewer
+              </h2>
+              <div id="LogView" className=" w-full p-4 bg-gray-100">
+                <LogViewer 
                 steps={steps}
                 isSorting={isSorting}
                 isPaused={isPaused}
