@@ -9,6 +9,7 @@ import CodeTabs from "@/components/other/codetabs";
 import { set } from "zod";
 import ArrayVisualizer from "@/components/Algorithm/arrayVisualizer";
 import LogViewer from "@/components/Algorithm/logViewer";
+import AlgoInfo from "@/components/Algorithm/AlgoInfo";
 // Interface for the algorithm data
 interface Algorithm {
   key: string;
@@ -41,7 +42,7 @@ export default function AlgorithmVisualization() {
   const [isSorting, setIsSorting] = useState(false); // State to control sorting
 
   const [currentSteps, setCurrentSteps] = useState<{ array: number[] }[]>([]);
- 
+
   const handleOpenPopup = () => setShowPopup(true);
   const handleClosePopup = () => setShowPopup(false);
 
@@ -73,7 +74,7 @@ export default function AlgorithmVisualization() {
 
   const handleStartSorting = () => {
     if (userData.length === 0) {
-      return
+      return;
     }
     setIsPaused(false);
     setIsSorting(true);
@@ -111,9 +112,8 @@ export default function AlgorithmVisualization() {
   };
 
   // const handleCurrentSteps = (array: number[]) => {
-  //   setCurrentSteps([{ array }]); 
+  //   setCurrentSteps([{ array }]);
   // }
-
 
   useEffect(() => {
     // Reset sorting time when speed changes
@@ -158,9 +158,15 @@ export default function AlgorithmVisualization() {
         <div className="p-4 border rounded-md shadow-md flex m-auto w-[80%] items-center justify-center gap-8">
           <h2 className="text-xl font-semibold mb-4">Controls</h2>
           <div className="container flex gap-2 items-center">
-            <Button disabled={isSorting} onClick={generateArray}>Generate New Array</Button>
+            <Button disabled={isSorting} onClick={generateArray}>
+              Generate New Array
+            </Button>
             OR
-            <Button disabled={isSorting}  color="primary" onClick={handleOpenPopup}>
+            <Button
+              disabled={isSorting}
+              color="primary"
+              onClick={handleOpenPopup}
+            >
               Enter Data
             </Button>
             {showPopup && (
@@ -171,10 +177,30 @@ export default function AlgorithmVisualization() {
             )}
           </div>
 
-          <Button disabled={isSorting || userData.length === 0}  onClick={resetArray}>Clear Array</Button>
-          <Button disabled={isSorting || userData.length === 0}  onClick={handleStartSorting}>Sort Array</Button>
-          <Button disabled={isSorting || userData.length === 0}  onClick={handleStartSorting}>Play</Button>
-          <Button disabled={!isSorting || userData.length === 0} onClick={handlePauseSorting}>Pause</Button>
+          <Button
+            disabled={isSorting || userData.length === 0}
+            onClick={resetArray}
+          >
+            Clear Array
+          </Button>
+          <Button
+            disabled={isSorting || userData.length === 0}
+            onClick={handleStartSorting}
+          >
+            Sort Array
+          </Button>
+          <Button
+            disabled={isSorting || userData.length === 0}
+            onClick={handleStartSorting}
+          >
+            Play
+          </Button>
+          <Button
+            disabled={!isSorting || userData.length === 0}
+            onClick={handlePauseSorting}
+          >
+            Pause
+          </Button>
 
           <div className="relative w-1/2 flex flex-col items-center justify-center group-hover:block">
             <input
@@ -223,7 +249,6 @@ export default function AlgorithmVisualization() {
                   algorithm={algorithmData}
                   onSortingComplete={handleSortingComplete}
                 />
-                
               </div>
               {/* Display sorting time */}
               {sortingTime !== null && (
@@ -231,21 +256,47 @@ export default function AlgorithmVisualization() {
                   Sorting completed in {sortingTime} seconds. speed {speed}X
                 </div>
               )}
+              <div className="container flex h-full gap-3 p-4">
+                <div className="flex-col">
+                  <div className="flex gap-2 items-center m-auto">
+                    <div className="w-4 h-4 rounded-lg bg-[#ffcc00]"></div>
+                    <p>- Pivot</p>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    {" "}
+                    <div className="w-4 h-4 rounded-lg bg-[#ff5733]"></div>
+                    <p>- Current left Index </p>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <div className="w-4 h-4 rounded-lg bg-sky-300"></div>
+                    <p>- Current right Index</p>
+                  </div>
+                </div>
+                <div className="flex-col">
+                  <div className="flex gap-2 items-center">
+                    <div className="w-4 h-4 rounded-lg bg-blue-700"></div>
+                    <p>- Comparison</p>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <div className="w-4 h-4 rounded-lg bg-black"></div>
+                    <p>- Swap</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-          
             <div className="flex-1 p-4 border rounded-md shadow-md ">
               <h2 className="text-xl font-semibold mb-4">
                 Array Visualization
               </h2>
               <div id="arrayView" className="h-14 w-full p-4 bg-gray-100">
-                <ArrayVisualizer 
-                steps={steps}
-                isSorting={isSorting}
-                isPaused={isPaused}
-                speed={speed}
-                userData={userData}
-                algorithm={algorithmData}
+                <ArrayVisualizer
+                  steps={steps}
+                  isSorting={isSorting}
+                  isPaused={isPaused}
+                  speed={speed}
+                  userData={userData}
+                  algorithm={algorithmData}
                 />
                 {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
@@ -262,19 +313,37 @@ export default function AlgorithmVisualization() {
               </div>
             </div>
             <div className="flex-1 p-4 border rounded-md shadow-md ">
-              <h2 className="text-xl font-semibold mb-4">
-                Steps Viewer
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">User Data</h2>
               <div id="LogView" className=" w-full  bg-gray-100">
-                <LogViewer 
+             
+                <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
+                  <div className="flex flex-wrap gap-2">
+                    {userData.map((num, index) => (
+                      <div
+                        key={index}
+                        className="w-10 h-10 flex items-center justify-center border rounded bg-gray-100 text-black"
+                      >
+                        {num}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 p-4 border rounded-md shadow-md w-[40%]">
+            <h2 className="text-xl font-semibold mb-4">Steps Viewer</h2>
+            <div id="LogView" className=" w-full  bg-gray-100">
+              <LogViewer
                 steps={steps}
                 isSorting={isSorting}
                 isPaused={isPaused}
                 speed={speed}
                 userData={userData}
                 algorithm={algorithmData}
-                />
-                {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
+              />
+              {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
                     {userData.map((num, index) => (
                       <div
@@ -286,10 +355,12 @@ export default function AlgorithmVisualization() {
                     ))}
                   </div>
                 </div> */}
-              </div>
             </div>
           </div>
+        </div>
 
+        <div className="container flex gap-3">
+          <AlgoInfo algorithm={algorithmData} />
           <div className="flex-1 p-4 border rounded-md shadow-md w-[40%]">
             <h2 className="text-xl font-semibold mb-4">Algorithm Code</h2>
             <pre className="bg-gray-800 text-white p-4 rounded-md">

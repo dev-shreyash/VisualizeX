@@ -273,7 +273,7 @@ export default function Visualizer({
           if (i === currentLeftIndex) return "#ff5733"; // Highlight left index in orange
           if (i === currentRightIndex) return "skyblue"; // Highlight right index in blue
           if (i === pivotIndex) return "#ffcc00"; // Highlight pivot index in yellow
-          if (comparison && comparison.includes(i)) return "green"; // Highlight comparison indices in pink
+          if (comparison && comparison.includes(i)) return "#1d4ed8 "; // Highlight comparison indices in pink
           if (swapped && swapped.includes(i)) return "black"; // Highlight swapped indices in green
           if (merged && merged.includes(i)) return "black"; // Highlight swapped indices in green
           if (sorted) return "green"; // Highlight sorted index in green

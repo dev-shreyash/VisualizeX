@@ -167,7 +167,7 @@ export default function LogViewer({
   }, [currentSteps, isPaused, isSorting, speed]);
 
   return (
-    <div className="flex flex-col items-center w-full h-64 p-4 bg-gray-800 overflow-hidden   rounded-md">
+    <div className="flex flex-col items-center w-full h-[700px] p-4 bg-gray-800 overflow-hidden   rounded-md">
       <div
         ref={logContainerRef}
         className="flex flex-col space-y-2 w-full overflow-auto max-h-full"

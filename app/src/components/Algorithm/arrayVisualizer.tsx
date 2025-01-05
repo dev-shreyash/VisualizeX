@@ -141,7 +141,7 @@ export default function Visualizer({
                   if (i === currentSteps[0]?.currentLeftIndex) return "#ff5733"; // Highlight left index in 
                   if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light 
                  // if (currentSteps[0]?.merged?.includes(i)) return "blue"; // Highlight merged indices in blue
-                  if (currentSteps[0]?.comparison?.includes(i)) return "green"; // Highlight comparison indices in
+                  if (currentSteps[0]?.comparison?.includes(i)) return "#1d4ed8 "; // Highlight comparison indices in
                   if (currentSteps[0]?.swapped?.includes(i)) return "black"; 
                  return "#e5e7eb"; // Default color
                 };
