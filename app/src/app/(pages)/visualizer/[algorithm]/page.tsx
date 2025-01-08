@@ -366,7 +366,7 @@ export default function AlgorithmVisualization() {
             <pre className="bg-gray-800 text-white p-4 rounded-md">
               {/* Insert algorithm code here */}
               <div className="flex flex-wrap gap-2">
-                <CodeTabs algorithm={algorithmData} />
+                <CodeTabs algorithm={algorithmData}  />
               </div>
             </pre>
           </div>

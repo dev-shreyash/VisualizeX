@@ -62,13 +62,19 @@ export const authOptions: NextAuthOptions = {
         params: {
           prompt: 'consent',
           access_type: 'offline',
-          response_type: 'code'
+          response_type: 'code',
+          scope: 'openid email profile',
         }
       }
     }),
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'user:email',
+        }
+      }
     }),
   ],
   debug: true,
@@ -87,8 +93,9 @@ export const authOptions: NextAuthOptions = {
         session.user.username = token.username;
       }
       return session;
-    }
+    },
   },
+  
   session: {
     strategy: 'jwt',
   },

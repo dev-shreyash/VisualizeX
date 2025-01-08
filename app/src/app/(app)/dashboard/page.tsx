@@ -54,12 +54,22 @@ const UserDashboard = () => {
         >
           Logout
         </Button>
+        {/* <Button
+          className="w-full mx-4 md:w-auto bg-slate-900 text-white"
+          variant="outline"
+          onClick={() => {
+            router.push("/onlineIDE");
+          }}
+        >
+          Online-IDE
+        </Button> */}
+          
       </div>
 
       <div className="container">
         <div className="flex flex-col font-bold text-3xl text-white m-0 p-3 bg-black justify-center">
           <AlgorithmSelector
-            selectedAlgorithm={selectedAlgorithm}
+        selectedAlgorithm={selectedAlgorithm}
             setSelectedAlgorithm={setSelectedAlgorithm}
           />
         </div>
