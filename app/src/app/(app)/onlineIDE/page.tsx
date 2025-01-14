@@ -85,7 +85,7 @@ function OnlineIDE() {
         // Properly append the result to the terminal history
         setTerminalHistory((prev) => [
           ...prev,
-          `Output: ${response.data.result}`,
+          `>>${response.data.result}`,
         ]);
       } else {
         setTerminalHistory((prev) => [
@@ -126,7 +126,7 @@ function OnlineIDE() {
         // Properly append the result to the terminal history
         setTerminalHistory((prev) => [
           ...prev,
-          `Output: ${response.data.result}`,
+          ` ${response.data.result}`,
         ]);
       } else {
         setTerminalHistory((prev) => [
@@ -194,6 +194,7 @@ function OnlineIDE() {
           <div className="w-full max-w-4xl mx-auto mt-4 shadow-md">
             <Editor
               height="90vh"
+              
               defaultLanguage={
                 tabs.find((tab) => tab.id === selectedTab)?.key || "javascript"
               }
@@ -210,6 +211,11 @@ function OnlineIDE() {
                 }))
               }
               theme="vs-dark"
+              options={{
+                minimap: { enabled: false },
+                wordWrap: "on",
+                wordWrapColumn: 80,
+              }}
             />
           </div>
 
