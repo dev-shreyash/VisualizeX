@@ -31,7 +31,7 @@ export default function Visualizer({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [sortingComplete, setSortingComplete] = useState(false);
   const [sortingTime, setSortingTime] = useState<number | null>(null); // State to store sorting time
-
+  const [isPausedState, setIsPausedState] = useState(isPaused); // State to store isPaused state
   useEffect(() => {
     setSortingComplete(false);
   }, [userData]);
@@ -45,6 +45,11 @@ export default function Visualizer({
       onSortingComplete(sortingTime);
     }
   }, [sortingTime]);
+
+  useEffect(() => {
+    setIsPausedState(isPaused);
+    console.log("is paused:",isPaused)
+  }, [isPaused]);
 
   // Initial rendering of array
   useEffect(() => {
@@ -114,18 +119,7 @@ export default function Visualizer({
           d3.select(this).attr("fill", "steelblue");
         });
 
-      //   // Add the value text inside each bar
-      //   bars
-      //     .enter()
-      //     .append("text")
-      //     .merge(bars)
-
-      //     .attr("x", (_, i) => i * barWidth + barWidth / 3) // Positioning the text in the center of the bar
-      //     .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight - 5) // Place the text at the bottom of the bar
-      //     .attr("text-anchor", "middle") // Center the text horizontally
-      //     .attr("font-size", "12px") // Font size
-      // //    .attr("fill", "white") // Text color
-      //     .text((d) => d); // Display the bar value as text
+     
 
       // Remove extra bars
       bars.exit().remove();
@@ -195,6 +189,7 @@ export default function Visualizer({
 
   useEffect(() => {
     const executeAlgorithm = async () => {
+      if (isPausedState) return;
       if (!algorithmMap[algorithm.key]) {
         console.error(`Algorithm "${algorithm.key}" not found.`);
         return;
@@ -209,7 +204,7 @@ export default function Visualizer({
     if (isSorting) {
       executeAlgorithm();
     }
-  }, [isSorting, algorithm.key]);
+  }, [isSorting, algorithm.key, isPausedState,speed]);
 
   useEffect(() => {
     const svgContainer = svgRef.current?.parentElement;
@@ -259,10 +254,12 @@ export default function Visualizer({
         .merge(bars)
         .transition() // Apply transition
         .duration(() => {
-          if (speed === 1) return 20;
-          if (speed === 0.75) return 50;
-          if (speed === 0.5) return 100;
-          if (speed === 0.25) return 300;
+          if (speed === 1) return 0;
+          if (speed === 0.75) return 150;
+          if (speed === 0.5) return 300;
+          if (speed === 0.25) return 600;
+          if (speed === 0.00) return 3600;
+
           return 0; // Default
         })
         .attr("x", (_, i) => i * barWidth)
@@ -285,10 +282,12 @@ export default function Visualizer({
         .exit()
         .transition() // Smoothly transition out
         .duration(() => {
-          if (speed === 1) return 20;
-          if (speed === 0.75) return 50;
-          if (speed === 0.5) return 100;
-          if (speed === 0.25) return 300;
+          if (speed === 1) return 0;
+          if (speed === 0.75) return 150;
+          if (speed === 0.5) return 300;
+          if (speed === 0.25) return 600;
+          if (speed === 0.00) return 3600;
+
           return 0; // Default
         })
         .attr("height", 0)
@@ -301,8 +300,10 @@ export default function Visualizer({
 
     let stepIndex = 0;
 
+   
     const renderStep = () => {
-      if (isPaused || !sorting) return;
+      if (isPausedState || !sorting) return;
+      console.log(isPausedState)
 
       const step = currentSteps[stepIndex];
       renderArrayWithValues({
@@ -312,14 +313,14 @@ export default function Visualizer({
         pivotIndex: step.pivot,
         comparison: step.comparison,
         swapped: step.swapped,
-        sorted: step.sorted,
+        sorted: step.sorted ?? undefined,
       });
 
       stepIndex++;
 
-      if (stepIndex < currentSteps.length && !isPaused) {
+      if (stepIndex < currentSteps.length && !isPausedState) {
         const stepDuration =
-          speed === 1 ? 20 : speed === 0.75 ? 50 : speed === 0.5 ? 100 : 300;
+          speed === 1 ? 0 : speed === 0.75 ? 150 : speed === 0.5 ? 300 : speed === 0.25 ? 600 : 3600;
 
         setTimeout(renderStep, stepDuration);
       } else {
@@ -333,9 +334,10 @@ export default function Visualizer({
     };
 
     if (sorting) {
+
       renderStep();
     }
-  }, [currentSteps, isPaused, sorting, speed]);
+  }, [currentSteps, isPausedState, sorting, speed]);
 
   return (
     <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>

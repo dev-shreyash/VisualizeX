@@ -39,7 +39,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center">
+    <div className="flex flex-col justify-center bg-slate-200">
       <div className="flex flex-col items-center justify-center text-gray-600 font-bold bg-slate-200 w-full">
         <h2 className="text-3xl">User Dashboard</h2>
         <div>
@@ -66,10 +66,10 @@ const UserDashboard = () => {
           
       </div>
 
-      <div className="container">
-        <div className="flex flex-col font-bold text-3xl text-white m-0 p-3 bg-black justify-center">
+      <div className="container bg-slate-400 rounded-t-[10vh] mt-2">
+        <div className="flex flex-col font-bold text-3xl text-white m-0 p-3 justify-center">
           <AlgorithmSelector
-        selectedAlgorithm={selectedAlgorithm}
+            selectedAlgorithm={selectedAlgorithm}
             setSelectedAlgorithm={setSelectedAlgorithm}
           />
         </div>

@@ -11,7 +11,7 @@ interface VisualizerProps {
     swapped?: [number, number];
     merged?: [number, number];
     sorted?: boolean;
-  }[]; // Highlighted indices for the current step
+  }[];
   isSorting: boolean;
   isPaused: boolean;
   speed: number;
@@ -23,7 +23,8 @@ interface VisualizerProps {
     image: string;
     route: string;
   };
-  onSortingComplete: (time: number) => void; // Callback function to pass data to parent
+  
+  onSortingComplete: (time: number) => void;
 }
 
 export default function Visualizer({
@@ -36,20 +37,24 @@ export default function Visualizer({
   onSortingComplete,
 }: VisualizerProps) {
   const [sortingComplete, setSortingComplete] = useState(false);
-  const [sortingTime, setSortingTime] = useState<number | null>(null); // State to store sorting time
-  const [currentSteps, setCurrentSteps] = useState<
-    {
+  const [sortingTime, setSortingTime] = useState<number | null>(null);
+  const [currentStep, setCurrentStep] = useState<
+  | null
+  | {
       array: number[];
       highlightedIndices: number[];
-    }[]
-  >([]);
+      currentLeftIndex?: number;
+      currentRightIndex?: number;
+      pivot?: number;
+      comparison?: [number, number];
+      swapped?: [number, number];
+      merged?: [number, number];
+      sorted?: boolean;
+    }
+>(null);
   const startTimeRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    setSortingComplete(false);
-    setSortingTime(null);
-  }, [userData]);
-
+  // Algorithm map
   const algorithmMap: Record<string, Function> = {
     bubbleSort: async (data: number[]) =>
       (await import("@/utils/algorithms/bubbleSort")).bubbleSort(data),
@@ -63,12 +68,20 @@ export default function Visualizer({
       (await import("@/utils/algorithms/mergeSortBottomUp")).mergeSortBottomUp(
         data
       ),
-      selectionSort: async (data: number[]) =>
-        (await import("@/utils/algorithms/selectionSort")).selectionSort(data),
-      insertionSort: async (data: number[]) =>
-        (await import("@/utils/algorithms/insertionSort")).insertionSort(data),
+    selectionSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/selectionSort")).selectionSort(data),
+    insertionSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/insertionSort")).insertionSort(data),
   };
 
+  // Reset states when user data changes
+  useEffect(() => {
+    setSortingComplete(false);
+    setSortingTime(null);
+    setCurrentStep(null);
+  }, [userData]);
+
+  // Run the selected algorithm when sorting starts
   useEffect(() => {
     const executeAlgorithm = async () => {
       if (!algorithmMap[algorithm.key]) {
@@ -77,8 +90,8 @@ export default function Visualizer({
       }
       const algoFunction = algorithmMap[algorithm.key];
       const generatedSteps = await algoFunction(userData);
-      setCurrentSteps(generatedSteps);
-      startTimeRef.current = Date.now(); // Capture start time
+      startTimeRef.current = Date.now(); // Record the start time
+      processSteps(generatedSteps); // Process algorithm steps
     };
 
     if (isSorting) {
@@ -86,122 +99,95 @@ export default function Visualizer({
     }
   }, [isSorting, algorithm.key]);
 
-  useEffect(() => {
+  // Process and render steps
+  const processSteps = (steps: VisualizerProps["steps"]) => {
     let stepIndex = 0;
 
-    const renderAlgorithmSteps = () => {
-      if (userData.length ===0) return ;
-      if (userData.length > 20) return;
-      if (isPaused || !isSorting || currentSteps.length === 0) return;
+    const renderNextStep = () => {
+      if (isPaused || !isSorting || stepIndex >= steps.length) {
+        if (stepIndex >= steps.length) {
+          setSortingComplete(true);
+          const endTime = Date.now();
+          const elapsedTime =
+            (endTime - (startTimeRef.current ?? endTime)) / 1000;
+          setSortingTime(elapsedTime);
+          //onSortingComplete(elapsedTime); // Notify parent
+        }
+        return;
+      }
 
-      const currentStep = currentSteps[stepIndex];
-      if (!currentStep) return;
-
-      setCurrentSteps([currentStep]);
-
+      setCurrentStep(steps[stepIndex]);
       stepIndex++;
 
-      if (stepIndex < currentSteps.length && !isPaused) {
-        const stepDuration =
-          speed === 1 ? 20 : speed === 0.75 ? 50 : speed === 0.5 ? 100 : 300;
+      const stepDuration =
+      speed === 1 ? 0 : speed === 0.75 ? 150 : speed === 0.5 ? 300 : speed === 0.25 ? 600 : 3600;
 
-        setTimeout(renderAlgorithmSteps, stepDuration);
-      } else {
-        setSortingComplete(true);
-        const endTime = Date.now();
-        const elapsedTime =
-          (endTime - (startTimeRef.current ?? endTime)) / 1000;
-        setSortingTime(elapsedTime);
-      }
+      setTimeout(renderNextStep, stepDuration);
     };
 
-    if (isSorting) {
-      renderAlgorithmSteps();
-    }
-  }, [currentSteps, isPaused, isSorting, speed]);
- 
-  const stepDuration = speed === 1 ? 20 : speed === 0.75 ? 50 : speed === 0.5 ? 100 : 300;
+    renderNextStep();
+  };
+
+  const stepDuration = 
+  speed === 1 ? 0 : speed === 0.75 ? 150 : speed === 0.5 ? 300 : speed === 0.25 ? 600 : 3600;
+
 
   if (userData.length > 20) {
-    return <div>Array too large to visualize</div>;
+    return <div>Array too large to visualize`(max:20)`</div>;
   }
+
   return (
     <div className="flex flex-col justify-center items-center w-full h-full">
       {/* Conditionally render based on isSorting */}
       {isSorting || sortingComplete ? (
         <div className="flex flex-col items-center space-y-4 w-full">
           {/* Render current step array */}
-          <div className="flex  w-full justify-around border-2 ">
-          {currentSteps.length > 0 &&
-              currentSteps[0].array.map((num, index) => {
-                // Determine the background color based on conditions
-                const getBackgroundColor = (i: number): string => {
-                  if (currentSteps[0]?.sorted) return "green"; // Highlight sorted indices in green
-                  if (i === currentSteps[0]?.pivot) return "#ffcc00"; // Highlight pivot index in yellow
-                  if (i === currentSteps[0]?.currentLeftIndex) return "#ff5733"; // Highlight left index in 
-                  if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light 
-                 // if (currentSteps[0]?.merged?.includes(i)) return "blue"; // Highlight merged indices in blue
-                  if (currentSteps[0]?.comparison?.includes(i)) return "#1d4ed8 "; // Highlight comparison indices in
-                  if (currentSteps[0]?.swapped?.includes(i)) return "black"; 
-                 return "#e5e7eb"; // Default color
-                };
-                const getTextColor = (i: number): string => {
-                  if (currentSteps[0]?.sorted)
-                    { 
-                      return "#fff";
-                    }
-                  if (i === currentSteps[0]?.pivot)
-                    { 
-                      return "#000";
-                    }
-                  if (currentSteps[0]?.comparison?.includes(i))
-                    { 
-                      return "#fff";
-                    }
-                  if (currentSteps[0]?.swapped?.includes(i))
-                    { 
-                      return "#fff";
-                    }
-                  if (i === currentSteps[0]?.currentLeftIndex)
-                    { 
-                      return "#000";
-                    }
-                  if (i === currentSteps[0]?.currentRightIndex)
-                    { 
-                      return "#000";
-                    }
-                  else {return "#000"; }
-                  // Highlight sorted indices in green
-                  // if (i === currentSteps[0]?.pivotIndex) return "#ffcc00"; // Highlight pivot index in yellow
-                  // if (currentSteps[0]?.comparison?.includes(i)) return "pink"; // Highlight comparison indices in pink
-                  // if (currentSteps[0]?.swapped?.includes(i)) return "#ff5733"; // Highlight swapped indices in red
-                  // if (i === currentSteps[0]?.currentLeftIndex) return "#1e90ff"; // Highlight left index in blue
-                  // if (i === currentSteps[0]?.currentRightIndex) return "skyblue"; // Highlight right index in light blue
-                  
-                };
-                
+          <div className="flex w-full justify-around border-2">
+            {currentStep?.array.map((num, index) => {
+              // Determine the background color
+              const getBackgroundColor = (i: number): string => {
+                if (currentStep?.sorted) return "green";
+                if (i === currentStep?.pivot) return "#ffcc00";
+                if (i === currentStep?.currentLeftIndex) return "#ff5733";
+                if (i === currentStep?.currentRightIndex) return "skyblue";
+                if (currentStep?.comparison?.includes(i)) return "#1d4ed8";
+                if (currentStep?.swapped?.includes(i)) return "black";
+                return "#e5e7eb";
+              };
 
-                return (
-                  <div
-                    key={index}
-                    className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300"
-                    style={{ backgroundColor: getBackgroundColor(index), color: getTextColor(index),                      
-                      transition: `all ${stepDuration}ms ease-in-out`,
-                    }}
-                  >
-                    {num}
-                  </div>
-                );
-              })}
+              const getTextColor = (i: number): string => {
+                if (currentStep?.sorted) return "#fff";
+                if (i === currentStep?.pivot) return "#000";
+                if (currentStep?.comparison?.includes(i)) return "#fff";
+                if (currentStep?.swapped?.includes(i)) return "#fff";
+                if (i === currentStep?.currentLeftIndex) return "#000";
+                if (i === currentStep?.currentRightIndex) return "#000";
+                return "#000";
+              };
+
+              return (
+                <div
+                  key={index}
+                  className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300"
+                  style={{
+                    backgroundColor: getBackgroundColor(index),
+                    color: getTextColor(index),
+                    transition: `all ${stepDuration}ms ease-in-out`,
+                  }}
+                >
+                  {num}
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : (
-        <div className="flex  w-full justify-around border-2 ">
+        <div className="flex w-full justify-around border-2">
           {userData.map((num, index) => (
             <div
               key={index}
-              className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300 bg-[#e5e7eb] "
-              >
+              className="w-full h-full flex items-center justify-center text-sm p-2 border-l-2 border-solid border-gray-300 bg-[#e5e7eb]"
+            >
               {num}
             </div>
           ))}

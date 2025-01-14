@@ -10,6 +10,7 @@ import { set } from "zod";
 import ArrayVisualizer from "@/components/Algorithm/arrayVisualizer";
 import LogViewer from "@/components/Algorithm/logViewer";
 import AlgoInfo from "@/components/Algorithm/AlgoInfo";
+import ArrayLengthPopup from "@/components/other/enterArrayLengthPopup";
 // Interface for the algorithm data
 interface Algorithm {
   key: string;
@@ -40,6 +41,11 @@ export default function AlgorithmVisualization() {
     return storedData ? JSON.parse(storedData) : [];
   });
   const [isSorting, setIsSorting] = useState(false); // State to control sorting
+  const [lengthOfArray, setLengthOfArray] = useState(() => {
+    const storedLength = localStorage.getItem("lengthOfArray");
+    return storedLength ? Number(storedLength) : 0;
+  });
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const [currentSteps, setCurrentSteps] = useState<{ array: number[] }[]>([]);
 
@@ -54,17 +60,27 @@ export default function AlgorithmVisualization() {
     setIsSorting(false);
   }, [userData]);
 
+  const handlePopupSubmit = (length: number) => {
+    setLengthOfArray(length);
+  };
+
+  useEffect(() => {
+    if (lengthOfArray > 0) {
+      const newArray = Array.from({ length: lengthOfArray }, () =>
+        Math.floor(Math.random() * 90 + 10)
+      );
+      setUserData(newArray);
+    }
+  }, [lengthOfArray]);
+
   const generateArray = () => {
     setIsSorting(false);
     setSortingTime(null);
+
     if (isSorting) {
       return;
     }
-    const newArray = Array.from(
-      { length: 15 },
-      () => Math.floor(Math.random() * 90 + 10) // Generate random 2-digit number (10 to 99)
-    );
-    setUserData(newArray);
+    setIsPopupOpen(true);
   };
 
   const resetArray = () => {
@@ -81,26 +97,25 @@ export default function AlgorithmVisualization() {
   };
 
   const handlePauseSorting = () => {
-    if (!isSorting) {
-      return;
-    }
+    // if (!isSorting) {
+    //   return;
+    // }
     setIsPaused(true);
     setIsSorting(false);
   };
 
-  const generateSteps = () => {
-    // This is a placeholder for generating steps, replace with actual algorithm steps.
-    const array = Array.from({ length: 15 }, () =>
-      Math.floor(Math.random() * 90 + 10)
-    );
-    const steps = [{ array }];
-    setSteps(steps);
-  };
+  useEffect(() => {
+    console.log(isPaused);
+  }, [isPaused]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("userData", JSON.stringify(userData));
-  }, [userData]);
+  }, [userData, lengthOfArray]);
+
+  useEffect(() => {
+    localStorage.setItem("LengthOfArray", String(lengthOfArray));
+  }, [lengthOfArray]);
 
   useEffect(() => {
     localStorage.setItem("speed", String(speed));
@@ -161,6 +176,12 @@ export default function AlgorithmVisualization() {
             <Button disabled={isSorting} onClick={generateArray}>
               Generate New Array
             </Button>
+            {isPopupOpen && (
+              <ArrayLengthPopup
+                onClose={() => setIsPopupOpen(false)}
+                onSubmit={handlePopupSubmit}
+              />
+            )}
             OR
             <Button
               disabled={isSorting}
@@ -205,7 +226,7 @@ export default function AlgorithmVisualization() {
           <div className="relative w-1/2 flex flex-col items-center justify-center group-hover:block">
             <input
               type="range"
-              min="0.25"
+              min="0.00"
               max="1.00"
               value={speed}
               step="0.25"
@@ -220,18 +241,18 @@ export default function AlgorithmVisualization() {
               className="absolute bottom-8 text-sm bg-gray-700 text-white px-2 py-1 rounded shadow-md"
               style={{
                 marginBottom: "1rem",
-                left: `${((speed - 0.25) * 100) / (1.0 - 0.25)}%`, // Adjusted calculation for 0.25 to 1.00 range
+                left: `${((speed - 0.0) * 100) / (1.0 - 0.0)}%`, // Adjusted calculation for 0.25 to 1.00 range
                 transform: "translateX(-50%)",
               }}
             >
-              {speed.toFixed(2)}x
+              {speed === 0.0 ? "Voice" : `${speed.toFixed(2)}x`}
             </div>
           </div>
         </div>
 
         {/* Visualization Windows */}
-        <div className="container flex gap-3">
-          <div className="flex  flex-col gap-3 w-[60%]">
+        <div className="container flex gap-3 ">
+          <div className="flex  flex-col gap-3 w-[60%] ">
             <div className="flex-1 p-4 border rounded-md shadow-md">
               <h2 className="text-xl font-semibold mb-4">
                 Bar Chart Visualization
@@ -315,7 +336,6 @@ export default function AlgorithmVisualization() {
             <div className="flex-1 p-4 border rounded-md shadow-md ">
               <h2 className="text-xl font-semibold mb-4">User Data</h2>
               <div id="LogView" className=" w-full  bg-gray-100">
-             
                 <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
                     {userData.map((num, index) => (
@@ -366,9 +386,16 @@ export default function AlgorithmVisualization() {
             <pre className="bg-gray-800 text-white p-4 rounded-md">
               {/* Insert algorithm code here */}
               <div className="flex flex-wrap gap-2">
-                <CodeTabs algorithm={algorithmData}  />
+                <CodeTabs algorithm={algorithmData} />
+                <hr />
               </div>
             </pre>
+            <h1>
+              Are you a coder?{" "}
+              <a href="/onlineIDE" className="text-blue-500 underline">
+                Try out
+              </a>
+            </h1>
           </div>
         </div>
       </div>
