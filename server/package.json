@@ -7,7 +7,9 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
-    "elysia": "latest"
+    "dotenv": "^16.4.7",
+    "elysia": "latest",
+    "server": "file:"
   },
   "devDependencies": {
     "bun-types": "latest"
