@@ -84,6 +84,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.username = user.username;
+        token.role = user.role; // Add role to the JWT token
       }
       return token;
     },
@@ -91,6 +92,7 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.username = token.username;
+        session.user.role = token.role; // Add role to the session
       }
       return session;
     },

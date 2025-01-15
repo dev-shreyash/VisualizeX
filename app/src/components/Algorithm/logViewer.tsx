@@ -53,15 +53,33 @@ export default function LogViewer({
   const logContainerRef = useRef<HTMLDivElement | null>(null); // Ref to the log container to scroll
 
   // Speak function with dynamic speech rate
+  let isFirstStart = true;
+
   const speak = (messageSpeech: string) => {
     if (speed !== 0.00) return;
-    const utterance = new SpeechSynthesisUtterance(messageSpeech);
-
-    utterance.lang = 'en-US'; 
-    utterance.rate = getSpeechRate(speed); 
-
-    speechSynthesis.speak(utterance);
+  
+    // Delay the first start by 3600ms
+    if (isFirstStart) {
+      isFirstStart = false;
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(messageSpeech);
+  
+        utterance.lang = 'en-US';
+        utterance.rate = getSpeechRate(speed);
+  
+        speechSynthesis.speak(utterance);
+      }, 3600); // Delay of 3600ms
+    } else {
+      // For subsequent speeches, no delay
+      const utterance = new SpeechSynthesisUtterance(messageSpeech);
+  
+      utterance.lang = 'en-US';
+      utterance.rate = getSpeechRate(speed);
+  
+      speechSynthesis.speak(utterance);
+    }
   };
+  
 
 
 

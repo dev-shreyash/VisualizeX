@@ -60,6 +60,13 @@ export default function AlgorithmVisualization() {
     setIsSorting(false);
   }, [userData]);
 
+  
+  useEffect(() => {
+    if (isPaused) {
+      window.location.reload();
+    }
+  }, [isPaused]);
+
   const handlePopupSubmit = (length: number) => {
     setLengthOfArray(length);
   };
@@ -334,7 +341,7 @@ export default function AlgorithmVisualization() {
               </div>
             </div>
             <div className="flex-1 p-4 border rounded-md shadow-md ">
-              <h2 className="text-xl font-semibold mb-4">User Data</h2>
+              <h2 className="text-xl font-semibold mb-4">User Data (Original Array)</h2>
               <div id="LogView" className=" w-full  bg-gray-100">
                 <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
@@ -393,7 +400,7 @@ export default function AlgorithmVisualization() {
             <h1>
               Are you a coder?{" "}
               <a href="/onlineIDE" className="text-blue-500 underline">
-                Try out
+                Try out our online IDE
               </a>
             </h1>
           </div>

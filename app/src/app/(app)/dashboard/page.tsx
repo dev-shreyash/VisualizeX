@@ -66,8 +66,8 @@ const UserDashboard = () => {
           
       </div>
 
-      <div className="container bg-slate-400 rounded-t-[10vh] mt-2">
-        <div className="flex flex-col font-bold text-3xl text-white m-0 p-3 justify-center">
+      <div className="container bg-slate-400 rounded-t-[10vh] mt-2 w-full">
+        <div className="flex flex-col font-bold text-3xl text-white m-0 p-3 justify-center w-full ">
           <AlgorithmSelector
             selectedAlgorithm={selectedAlgorithm}
             setSelectedAlgorithm={setSelectedAlgorithm}

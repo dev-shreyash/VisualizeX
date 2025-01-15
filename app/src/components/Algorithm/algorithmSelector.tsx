@@ -50,14 +50,14 @@ export default function AlgorithmSelector({
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 w-full">
       <h1 className="text-2xl font-bold text-center mb-6">Select an Algorithm</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex flex-wrap justify-center w-full ">
         {algorithms.map((algo) => (
           <div
             key={algo.key}
-            className={`container h-full w-[100%] bg-white border border-gray-300 rounded-md flex flex-col items-center gap-4 p-5 m-5 cursor-pointer shadow-md transition-transform duration-200 ${
-              selectedAlgorithm === algo.key ? "bg-blue-100 border-blue-500 scale-105" : ""
+            className={`container h-[300px] w-[400px] bg-white border border-gray-300  rounded-md flex flex-col items-center gap-4 p-5 m-5 cursor-pointer shadow-md transition-transform duration-200 ${
+              selectedAlgorithm === algo.key ? "bg-blue-100 scale-105" : ""
             }`}
             onClick={() => handleAlgorithmSelection(algo.key)}
           >
