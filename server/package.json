@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
@@ -12,7 +12,12 @@
     "server": "file:"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@types/jest": "^29.5.14",
+    "@types/mocha": "^10.0.10",
+    "bun-types": "latest",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2"
   },
   "module": "src/index.js"
 }

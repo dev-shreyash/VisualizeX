@@ -55,7 +55,7 @@ const Navbar = () => {
             isVisible ? "h-[64px] opacity-100" : "h-0 opacity-0"
           }`}
         >
-          <div className="flex justify-between items-center p-5 text-white bg-gray-800 shadow-md">
+          <div className={`flex justify-between items-center p-5 text-white bg-gray-800 shadow-md ${isVisible ? "h-[64px]" : "h-0"}`}>
             <div className="flex gap-2 items-center">
               <span
                 className="font-bold font-mono text-2xl cursor-pointer"

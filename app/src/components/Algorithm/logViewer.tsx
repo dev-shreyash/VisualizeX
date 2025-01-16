@@ -68,7 +68,7 @@ export default function LogViewer({
         utterance.rate = getSpeechRate(speed);
   
         speechSynthesis.speak(utterance);
-      }, 3600); // Delay of 3600ms
+      }, 2600); // Delay of 3600ms
     } else {
       // For subsequent speeches, no delay
       const utterance = new SpeechSynthesisUtterance(messageSpeech);
