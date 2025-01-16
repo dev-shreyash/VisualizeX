@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect unauthenticated users trying to access the dashboard
   if (!token && url.pathname.startsWith('/dashboard')) {
-   // return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
   // Restrict access to admin routes
