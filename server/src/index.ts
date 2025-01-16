@@ -11,6 +11,8 @@ const app = new Elysia()
   .get("/api/status", getServerStatus) // Server status route is now "/api/status"
   .listen(5000); // Set the port to 5000
 
+  console.log(process.env.CLIENT_URL)
+
 console.log(
   `🦊 Elysia server is running at http://localhost:${app.server?.port}/api`
 );

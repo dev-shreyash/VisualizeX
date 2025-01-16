@@ -72,7 +72,7 @@ function OnlineIDE() {
       console.log("Language:", language);
       console.log("Input:", stdin);
 
-      const response = await axios.post("http://localhost:5000/execute", {
+      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/execute", {
         code,
         language,
         inputs: stdin,
