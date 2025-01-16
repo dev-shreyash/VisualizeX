@@ -1,17 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 
 interface VisualizerProps {
-  steps: {
-    array: number[];
-    highlightedIndices: number[];
-    currentLeftIndex?: number;
-    currentRightIndex?: number;
-    pivot?: number;
-    comparison?: [number, number];
-    swapped?: [number, number];
-    merged?: [number, number];
-    sorted?: boolean;
-  }[];
+  // steps: {
+  //   array: number[];
+  //   highlightedIndices: number[];
+  //   currentLeftIndex?: number;
+  //   currentRightIndex?: number;
+  //   pivot?: number;
+  //   comparison?: [number, number];
+  //   swapped?: [number, number];
+  //   merged?: [number, number];
+  //   sorted?: boolean;
+  // }[];
   isSorting: boolean;
   isPaused: boolean;
   speed: number;
@@ -28,7 +28,7 @@ interface VisualizerProps {
 }
 
 export default function Visualizer({
-  steps,
+  //steps,
   isSorting,
   isPaused,
   speed,
@@ -100,7 +100,7 @@ export default function Visualizer({
   }, [isSorting, algorithm.key]);
 
   // Process and render steps
-  const processSteps = (steps: VisualizerProps["steps"]) => {
+  const processSteps = (steps: any) => {
     let stepIndex = 0;
 
     const renderNextStep = () => {

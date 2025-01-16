@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 
 interface VisualizerProps {
-  steps: { array: number[]; highlightedIndices: number[] }[]; // Highlighted indices for the current step
+ // steps: { array: number[]; highlightedIndices: number[] }[]; // Highlighted indices for the current step
   isSorting: boolean;
   isPaused: boolean;
   speed: number;
@@ -20,7 +20,7 @@ interface VisualizerProps {
 }
 
 export default function Visualizer({
-  steps,
+ // steps,
   isSorting,
   isPaused,
   speed,
@@ -92,7 +92,7 @@ export default function Visualizer({
       bars
         .enter()
         .append("rect")
-        .merge(bars)
+       // .merge(bars)
         .attr("x", (_, i) => i * barWidth)
         .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight)
         .attr("width", barWidth - 2)
@@ -118,6 +118,16 @@ export default function Visualizer({
           tooltip.style("opacity", 0);
           d3.select(this).attr("fill", "steelblue");
         });
+
+         // Merge the new bars with the existing bars
+        svg.selectAll("rect")
+          .data(data)
+          .merge(bars)
+          .attr("x", (_, i) => i * barWidth)
+          .attr("y", (d) => maxBarHeight - (d / maxVal) * maxBarHeight)
+          .attr("width", barWidth - 2)
+          .attr("height", (d) => (d / maxVal) * maxBarHeight)
+          .attr("fill", "steelblue");
 
      
 
@@ -251,7 +261,7 @@ export default function Visualizer({
       bars
         .enter()
         .append("rect")
-        .merge(bars)
+        .merge(bars as any)
         .transition() // Apply transition
         .duration(() => {
           if (speed === 1) return 0;
@@ -276,6 +286,8 @@ export default function Visualizer({
           if (sorted) return "green"; // Highlight sorted index in green
           return "steelblue"; // Default bar color
         });
+
+        
 
       // Remove old bars
       bars

@@ -66,6 +66,8 @@ export default function AlgorithmSelector({
               src={algo.image}
               alt={`${algo.name} visualization`}
               className="w-full h-40 object-cover rounded-md"
+              width={400}
+              height={300}
             />
             <span className="text-gray-700 text-lg font-semibold">{algo.name}</span>
             <p className="text-gray-500 text-sm text-center">{algo.description}</p>

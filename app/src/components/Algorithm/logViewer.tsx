@@ -2,17 +2,17 @@ import { useEffect, useState, useRef, use } from "react";
 import { set } from "zod";
 
 interface LogViewerProps {
-  steps: {
-    array: number[];
-    highlightedIndices: number[];
-    currentLeftIndex?: number;
-    currentRightIndex?: number;
-    pivot?: number;
-    comparison?: [number, number];
-    swapped?: [number, number];
-    merged?: [number, number];
-    sorted?: boolean;
-  }[];
+  // steps: {
+  //   array: number[];
+  //   highlightedIndices: number[];
+  //   currentLeftIndex?: number;
+  //   currentRightIndex?: number;
+  //   pivot?: number;
+  //   comparison?: [number, number];
+  //   swapped?: [number, number];
+  //   merged?: [number, number];
+  //   sorted?: boolean;
+  // }[];
   isSorting: boolean;
   isPaused: boolean;
   speed: number;
@@ -27,7 +27,7 @@ interface LogViewerProps {
 }
 
 export default function LogViewer({
-  steps,
+  // steps,
   isSorting,
   isPaused,
   speed,
@@ -100,9 +100,9 @@ export default function LogViewer({
   };
 
   // Update current steps whenever the steps prop changes
-  useEffect(() => {
-    setCurrentSteps(steps);
-  }, [steps]);
+  // useEffect(() => {
+  //   setCurrentSteps(steps);
+  // }, [steps]);
 
   // Reset logs on new input (for the first time sorting starts)
   useEffect(() => {

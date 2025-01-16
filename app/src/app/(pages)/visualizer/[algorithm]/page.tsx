@@ -28,26 +28,76 @@ export default function AlgorithmVisualization() {
   const [isPaused, setIsPaused] = useState(false);
   const [sortingTime, setSortingTime] = useState<number | null>(null); // State to store sorting time
 
-  const [speed, setSpeed] = useState(() => {
-    // Initialize from localStorage
-    const storedSpeed = localStorage.getItem("speed");
-    return storedSpeed ? Number(storedSpeed) : 1;
-  });
   const [showPopup, setShowPopup] = useState(false);
 
-  const [userData, setUserData] = useState<number[]>(() => {
-    // Initialize from localStorage
-    const storedData = localStorage.getItem("userData");
-    return storedData ? JSON.parse(storedData) : [];
-  });
   const [isSorting, setIsSorting] = useState(false); // State to control sorting
-  const [lengthOfArray, setLengthOfArray] = useState(() => {
-    const storedLength = localStorage.getItem("lengthOfArray");
-    return storedLength ? Number(storedLength) : 0;
-  });
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [userData, setUserData] = useState<number[]>([]);  // Default as an empty array
+  const [lengthOfArray, setLengthOfArray] = useState(0); // Default value as 0
+  const [speed, setSpeed] = useState(1); // Default value as 1
 
-  const [currentSteps, setCurrentSteps] = useState<{ array: number[] }[]>([]);
+  // UseEffect to load initial data from localStorage (only on client side)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      //console.log("Fetching data from localStorage...");
+
+      const storedUserData = localStorage.getItem("userData");
+      const storedLength = localStorage.getItem("LengthOfArray");
+      const storedSpeed = localStorage.getItem("speed");
+
+      // console.log("Stored Data - userData:", storedUserData);
+      // console.log("Stored Data - LengthOfArray:", storedLength);
+      // console.log("Stored Data - speed:", storedSpeed);
+
+      if (storedUserData) {
+        try {
+          setUserData(JSON.parse(storedUserData)); // Parse and set userData
+        } catch (error) {
+          console.error("Error parsing userData:", error);
+        }
+      }
+
+      if (storedLength) {
+        setLengthOfArray(Number(storedLength)); // Convert and set lengthOfArray
+      }
+
+      if (storedSpeed) {
+        setSpeed(Number(storedSpeed)); // Convert and set speed
+      }
+    }
+  }, []); // Empty dependency array means this runs only once after component mounts
+
+  // Save state to localStorage whenever it changes (client side)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // console.log("Saving userData to localStorage:", userData);
+      if (userData.length > 0) {
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+    }
+  }, [userData]); // Run when userData changes
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+     // console.log("Saving LengthOfArray to localStorage:", lengthOfArray);
+      if (lengthOfArray !== null) {
+        localStorage.setItem("LengthOfArray", String(lengthOfArray));
+      }
+    }
+  }, [lengthOfArray]); // Run when lengthOfArray changes
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      //console.log("Saving speed to localStorage:", speed);
+      if (speed !== null) {
+        localStorage.setItem("speed", String(speed));
+      }
+    }
+  }, [speed]); // Run when speed changes
+
+
+
+
 
   const handleOpenPopup = () => setShowPopup(true);
   const handleClosePopup = () => setShowPopup(false);
@@ -60,7 +110,6 @@ export default function AlgorithmVisualization() {
     setIsSorting(false);
   }, [userData]);
 
-  
   useEffect(() => {
     if (isPaused) {
       window.location.reload();
@@ -115,18 +164,6 @@ export default function AlgorithmVisualization() {
     console.log(isPaused);
   }, [isPaused]);
 
-  // Save state to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("userData", JSON.stringify(userData));
-  }, [userData, lengthOfArray]);
-
-  useEffect(() => {
-    localStorage.setItem("LengthOfArray", String(lengthOfArray));
-  }, [lengthOfArray]);
-
-  useEffect(() => {
-    localStorage.setItem("speed", String(speed));
-  }, [speed]);
   const handleSortingComplete = (time: number) => {
     setSortingTime(time);
     setIsSorting(false);
@@ -269,13 +306,16 @@ export default function AlgorithmVisualization() {
                 className="flex flex-col justify-center h-64 w-full p-4 bg-gray-100 items-center"
               >
                 <Visualizer
-                  steps={steps}
+                  // steps={steps}
                   isSorting={isSorting}
                   isPaused={isPaused}
                   speed={speed}
                   userData={userData}
                   algorithm={algorithmData}
                   onSortingComplete={handleSortingComplete}
+                  currentSteps={function (array: number[]): void {
+                    throw new Error("Function not implemented.");
+                  }}
                 />
               </div>
               {/* Display sorting time */}
@@ -319,12 +359,15 @@ export default function AlgorithmVisualization() {
               </h2>
               <div id="arrayView" className="h-14 w-full p-4 bg-gray-100">
                 <ArrayVisualizer
-                  steps={steps}
+                  // steps={steps}
                   isSorting={isSorting}
                   isPaused={isPaused}
                   speed={speed}
                   userData={userData}
                   algorithm={algorithmData}
+                  onSortingComplete={function (time: number): void {
+                    throw new Error("Function not implemented.");
+                  }}
                 />
                 {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
@@ -341,7 +384,9 @@ export default function AlgorithmVisualization() {
               </div>
             </div>
             <div className="flex-1 p-4 border rounded-md shadow-md ">
-              <h2 className="text-xl font-semibold mb-4">User Data (Original Array)</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                User Data (Original Array)
+              </h2>
               <div id="LogView" className=" w-full  bg-gray-100">
                 <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
@@ -363,7 +408,7 @@ export default function AlgorithmVisualization() {
             <h2 className="text-xl font-semibold mb-4">Steps Viewer</h2>
             <div id="LogView" className=" w-full  bg-gray-100">
               <LogViewer
-                steps={steps}
+                //steps={steps}
                 isSorting={isSorting}
                 isPaused={isPaused}
                 speed={speed}
