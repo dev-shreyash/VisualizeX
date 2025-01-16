@@ -4,15 +4,16 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const url = request.nextUrl;
+  console.log("url:",url)
 
   // Redirect logged-in users from sign-in/sign-up to dashboard
   if (token && (url.pathname.startsWith('/sign-in') || url.pathname.startsWith('/sign-up'))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+   // return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Redirect unauthenticated users trying to access the dashboard
   if (!token && url.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+   // return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
   // Restrict access to admin routes
@@ -20,7 +21,7 @@ export async function middleware(request: NextRequest) {
     if (!token || token.role !== 'ADMIN') {
       //console.log(token)
 
-      return NextResponse.redirect(new URL('/403', request.url)); // Redirect to a 403 Forbidden page
+      //return NextResponse.redirect(new URL('/403', request.url)); // Redirect to a 403 Forbidden page
     }
   }
 
@@ -28,5 +29,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/sign-in', '/sign-up', '/dashboard/:path*', '/admin/:path*'], // Match both dashboard and admin routes
+  matcher: ['/sign-in', '/sign-up', '/dashboard', '/admin'], // Match both dashboard and admin routes
 };
