@@ -39,7 +39,7 @@ export default function AlgorithmSelector({
     console.log("Selected Algorithm: ", selectedAlgorithm);
   }, [selectedAlgorithm]);
 
-  if (!isMounted || algorithms.length === 0) return <div>Loading...</div>; // Prevent rendering until mounted and data is loaded.
+  if (!isMounted || algorithms.length === 0) return <div className="text-center h-screen">Loading...</div>; // Prevent rendering until mounted and data is loaded.
 
   const handleAlgorithmSelection = (key: string) => {
     setSelectedAlgorithm(key);

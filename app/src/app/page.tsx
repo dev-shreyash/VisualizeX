@@ -9,8 +9,8 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <main className="flex min-h-screen flex-col items-center text-7xl justify-between p-24 text-white bg-[#1f1f1f]">
-     This is home page
+    <main className="flex min-h-screen flex-col items-center text-7xl justify-between p-24 text-white bg-slate-200">
+     VisualizeX
 
      <span className="lowercase underline">
       Shreyash
