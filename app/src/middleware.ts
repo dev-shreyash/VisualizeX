@@ -4,11 +4,19 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const url = request.nextUrl;
-  console.log("url:",url)
+  // console.log("url:",url)
+  // console.log("url pathname:",url.pathname)
+  // if (url.pathname.startsWith('/dashboard')){
+  //   console.log("token yes:",token)
+  // }
+ // const token = await getToken({ req: request });
+console.log("Token in middleware:", token);  // Add this for debugging
+
+
 
   // Redirect logged-in users from sign-in/sign-up to dashboard
   if (token && (url.pathname.startsWith('/sign-in') || url.pathname.startsWith('/sign-up'))) {
-   // return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Redirect unauthenticated users trying to access the dashboard
@@ -21,7 +29,7 @@ export async function middleware(request: NextRequest) {
     if (!token || token.role !== 'ADMIN') {
       //console.log(token)
 
-      //return NextResponse.redirect(new URL('/403', request.url)); // Redirect to a 403 Forbidden page
+      return NextResponse.redirect(new URL('/403', request.url)); // Redirect to a 403 Forbidden page
     }
   }
 
