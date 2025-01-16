@@ -46,7 +46,9 @@ const EnterDataPopup: React.FC<EnterDataPopupProps> = ({ onClose, onSubmit }) =>
               maxLength={2}
               value={value}
               onChange={(e) => handleChange(index, e.target.value)}
-              ref={(el) => (inputRefs.current[index] = el)}
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               className="flex-1 min-w-[40px] max-w-[50px] border border-gray-300 rounded p-2 text-center"
             />
           ))}
