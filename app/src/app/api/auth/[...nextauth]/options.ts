@@ -106,7 +106,7 @@ export const authOptions: NextAuthOptions = {
       name: 'next-auth.session-token',
       options: {
         httpOnly: true,
-        //secure: process.env.NODE_ENV === 'production', // Make sure cookies are secure in production
+        secure: process.env.NODE_ENV === 'production', // Make sure cookies are secure in production
         sameSite: 'lax',  // This ensures that cookies are sent only from same-site requests
       },
     },
