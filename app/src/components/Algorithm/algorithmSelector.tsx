@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Algorithm {
   key: string;
@@ -61,7 +62,7 @@ export default function AlgorithmSelector({
             }`}
             onClick={() => handleAlgorithmSelection(algo.key)}
           >
-            <img
+            <Image
               src={algo.image}
               alt={`${algo.name} visualization`}
               className="w-full h-40 object-cover rounded-md"

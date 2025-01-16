@@ -12,10 +12,10 @@ export default function HowToUsePage() {
           </p>
           <ol className="list-decimal list-inside space-y-2">
             <li>
-              <strong>Sign Up or Log In:</strong> Use the login page to access your account. If you don't have an account, register using the sign-up form.
+              <strong>Sign Up or Log In:</strong> Use the login page to access your account. If you don&apos;t have an account, register using the sign-up form.
             </li>
             <li>
-              <strong>Access the Dashboard:</strong> Navigate to the dashboard, where you'll find access to the Algorithm Visualizer and Online IDE.
+              <strong>Access the Dashboard:</strong> Navigate to the dashboard, where you&apos;ll find access to the Algorithm Visualizer and Online IDE.
             </li>
           </ol>
         </section>
@@ -23,7 +23,7 @@ export default function HowToUsePage() {
         <section>
           <h2 className="text-2xl font-semibold mb-4">Using the Algorithm Visualizer</h2>
           <p className="mb-4">
-            The Algorithm Visualizer helps you understand how algorithms work through step-by-step visualizations. Here's how to use it:
+            The Algorithm Visualizer helps you understand how algorithms work through step-by-step visualizations. Here&apos;s how to use it:
           </p>
           <ol className="list-decimal list-inside space-y-2">
             <li>
