@@ -2,14 +2,14 @@
   "name": "app",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "generate:primary": "prisma generate --schema=prisma/primary-db-schema/primary.schema.prisma",
+"scripts": {
+  "dev": "next dev",
+  "generate:primary": "prisma generate --schema=prisma/primary-db-schema/primary.schema.prisma",
   "generate:secondary": "prisma generate --schema=prisma/secondary-db-schema/secondary.schema.prisma",
   "build": "npm run generate:primary && npm run generate:secondary && next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+  "start": "next start",
+  "lint": "next lint"
+},
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@monaco-editor/react": "^4.6.0",
