@@ -6,8 +6,10 @@
   "dev": "next dev",
   "generate:primary": "prisma generate --schema=prisma/primary-db-schema/primary.schema.prisma",
   "generate:secondary": "prisma generate --schema=prisma/secondary-db-schema/secondary.schema.prisma",
-  "build": "npm run generate:primary && npm run generate:secondary && next build",
+  "generate": "npm run generate:primary && npm run generate:secondary",
+  "build": "npm run generate && next build",
   "start": "next start",
+  "postinstall": "npm run generate"
   "lint": "next lint"
 },
   "dependencies": {
