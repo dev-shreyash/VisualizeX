@@ -9,7 +9,7 @@
   "generate": "npm run generate:primary && npm run generate:secondary",
   "build": "npm run generate && next build",
   "start": "next start",
-  "postinstall": "npm run generate"
+  "postinstall": "npm run generate",
   "lint": "next lint"
 },
   "dependencies": {
