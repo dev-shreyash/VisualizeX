@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { useSession, signIn, signOut, getSession } from "next-auth/react";
+import { useSession, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-//import { signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import UpdateEmailForm from "@/components/user/updateEmailForm";
 import UpdatePasswordForm from "@/components/user/updatePasswordForm";
 import { set } from "zod";
@@ -20,9 +20,9 @@ const UserDashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ redirect: false, callbackUrl: "/" });
-      router.push("/");
-      window.location.reload();
+      await signOut({ redirect: false, callbackUrl: "/sign-in" });
+      router.push("/sign-in");
+      //window.location.reload();
     } catch {
       toast({
         title: "Error",

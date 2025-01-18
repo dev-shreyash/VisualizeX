@@ -1,4 +1,4 @@
-import { db } from "@/app/lib/database/database";
+import { dbPrimary } from "@/app/lib/database/primary-database";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const { username, newPassword, password: oldPassword } = await req.json();
 
     // Find the user by username
-    const user = await db.user.findUnique({
+    const user = await dbPrimary.user.findUnique({
       where: { username },
     });
 
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     // Update the user's password
-    const updatedUser = await db.user.update({
+    const updatedUser = await dbPrimary.user.update({
       where: { username },
       data: { password: hashedNewPassword },
     });

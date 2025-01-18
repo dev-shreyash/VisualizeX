@@ -38,5 +38,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/sign-in', '/sign-up', '/dashboard', '/admin'], // Match both dashboard and admin routes
+  matcher: ['/sign-in', '/sign-up', '/dashboard:path*', '/admin'], // Match both dashboard and admin routes
 };

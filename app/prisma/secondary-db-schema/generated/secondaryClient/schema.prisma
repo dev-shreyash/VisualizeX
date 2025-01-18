@@ -1,0 +1,50 @@
+// Database connection for the secondary database
+
+//cli to run
+//$ npx prisma migrate dev --schema=prisma/secondary.schema.prisma
+//$ npx prisma generate --schema=prisma/secondary.schema.prisma
+generator secondaryclient {
+  provider = "prisma-client-js"
+  output   = "./generated/secondaryClient" // Path for the Prisma client generated for secondary DB
+}
+
+datasource dbSecondary {
+  provider = "postgresql"
+  url      = env("SECONDARY_DATABASE_URL")
+}
+
+// Migration configuration for Secondary DB
+// generator migrate {
+//   provider = "prisma-migrate"
+//   migrations = "./prisma/secondary-migrations"  // Migrations for secondary DB
+// }
+
+// Combined Algorithm Model - combines AlgorithmInfo, TimeComplexity, AlgorithmCode, and AlgorithmMetadata
+model Algorithm {
+  id                  Int             @id @default(autoincrement())
+  key                 String          @unique
+  name                String
+  description         String
+  steps               String[] // Steps for the algorithm
+  keyConcepts         String[] // Key concepts of the algorithm
+  worstCase           String
+  bestCase            String
+  averageCase         String
+  spaceComplexity     String // Space complexity as a string
+  advantages          String[] // Advantages of the algorithm
+  disadvantages       String[] // Disadvantages of the algorithm
+  practicalUse        String[] // Practical use of the algorithm
+  metadataName        String // Name from metadata
+  metadataDescription String // Description from metadata
+  metadataImage       String // Image for the algorithm
+  metadataRoute       String // Route for the algorithm
+  codes               AlgorithmCode[] // Relation to multiple code implementations
+}
+
+model AlgorithmCode {
+  id          Int       @id @default(autoincrement())
+  language    String // Programming language (e.g., Python, Java)
+  code        String // Code implementation for the algorithm
+  algorithmId Int
+  algorithm   Algorithm @relation(fields: [algorithmId], references: [id]) // Relation to Algorithm
+}

@@ -6,6 +6,9 @@ import Editor from "@monaco-editor/react";
 import { useSessionData } from "@/app/hooks/useSessionData";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { set } from "zod";
+
 
 function OnlineIDE() {
   const { session, status } = useSessionData();
@@ -20,6 +23,8 @@ function OnlineIDE() {
   const [commentSymbols, setCommentSymbols] = useState<string[]>([]);
   const [terminalHistory, setTerminalHistory] = useState<string[]>([]); // Terminal History
   const [userData, setUserData] = useState<number[]>([]); // Initialized to an empty array
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const tabs = [
     { id: "1", label: "Python", key: "python" },
@@ -65,6 +70,7 @@ function OnlineIDE() {
 
     const code = editorContent[currentTab.key];
     const language = currentTab.key;
+    setIsSubmitting(true);
 
     try {
       console.log("Sending code execution request...");
@@ -83,17 +89,20 @@ function OnlineIDE() {
       // Check if the response has the expected structure
       if (response.data && response.data.status === 200) {
         // Properly append the result to the terminal history
+        setIsSubmitting(false);
         setTerminalHistory((prev) => [
           ...prev,
           `>>${response.data.result}`,
         ]);
       } else {
+        setIsSubmitting(false);
         setTerminalHistory((prev) => [
           ...prev,
           `Error: ${response.data.error}`,
         ]);
       }
     } catch (error: any) {
+      setIsSubmitting(false);
       console.log("Error:", error); // Log the error
       setTerminalHistory((prev) => [...prev, `Error: ${error.message}`]);
     }
@@ -102,6 +111,7 @@ function OnlineIDE() {
   const handleTerminalInput = async (input: string) => {
     setTerminalHistory((prev) => [...prev, `> ${input}`]); // Add user input to history
     setStdin(""); // Clear input after submitting
+    setIsSubmitting(true);
 
     try {
       const currentTab = tabs.find((tab) => tab.id === selectedTab);
@@ -124,17 +134,20 @@ function OnlineIDE() {
       // Check if the response has the expected structure
       if (response.data && response.data.status === 200) {
         // Properly append the result to the terminal history
+        setIsSubmitting(false);
         setTerminalHistory((prev) => [
           ...prev,
           ` ${response.data.result}`,
         ]);
       } else {
+        setIsSubmitting(false);
         setTerminalHistory((prev) => [
           ...prev,
           `Error: ${response.data.error}`,
         ]);
       }
     } catch (error: any) {
+      setIsSubmitting(false);
       console.log("Error:", error); // Log the error
       setTerminalHistory((prev) => [...prev, `Error: ${error.message}`]);
     }
@@ -179,7 +192,14 @@ function OnlineIDE() {
             onClick={handleRunCode}
             className=" px-6 py-2 text-white font-semibold rounded-md shadow-md hover:bg-emerald-500"
           >
-            Run Code
+             {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  "Run Code"
+                )}
           </Button>
 
         </div>

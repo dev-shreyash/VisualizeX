@@ -1,4 +1,4 @@
-import { db } from "@/app/lib/database/database";
+import { dbPrimary } from "@/app/lib/database/primary-database";
 import { z } from "zod";
 import { usernameValidation } from "@/schemas/signUpSchema";
 
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     const { username } = result.data;
 
     // Prisma query to check if username exists
-    const user = await db.user.findFirst({
+    const user = await dbPrimary.user.findFirst({
       where: { username }
     });
 

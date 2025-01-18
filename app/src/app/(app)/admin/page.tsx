@@ -3,6 +3,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { redirect } from "next/navigation";
 import UserLoad from "@/components/admin/userLoad";
 import ServerStatus from "@/components/admin/serverStatus";
+import AlgorithmForm from "@/components/admin/algorithmLoad";
+import AlgorithmManagement from "@/components/admin/algorithmLoad";
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
@@ -35,6 +37,10 @@ export default async function AdminPage() {
       <div className="flex-col">
         <h1 className="text-3xl font-bold mb-5">Manage Users</h1>
         <UserLoad />
+      </div>
+      <div className="flex-col">
+        <h1 className="text-3xl font-bold mb-5">Manage Algorithms</h1>
+        <AlgorithmManagement/>
       </div>
     </div>
   );
