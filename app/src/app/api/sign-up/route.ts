@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
-import { dbPrimary } from "@/app/lib/database/primary-database";
+import { db } from "@/app/lib/database/database";
 import bcrypt from "bcryptjs";
 
 
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const { username, email, password } = await req.json();
 
     //CHECK EXISTING USER
-    const existingUserByUsername = await dbPrimary.user.findUnique({
+    const existingUserByUsername = await db.user.findUnique({
       where: { username }
     });
 
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const existingUserByEmail = await dbPrimary.user.findUnique({
+    const existingUserByEmail = await db.user.findUnique({
       where: { email }
     });
 
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     const hashedPass = await bcrypt.hash(password, 10);
 
     //CREATE NEW USER
-    const newUser = await dbPrimary.user.create({
+    const newUser = await db.user.create({
       data: {
         username,
         email,

@@ -4,12 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "generate:primary": "prisma generate --schema=prisma/primary-db-schema/primary.schema.prisma",
-    "generate:secondary": "prisma generate --schema=prisma/secondary-db-schema/secondary.schema.prisma",
-    "generate": "npm run generate:primary && npm run generate:secondary",
-    "build": "npm run generate && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "postinstall": "npm run generate",
     "lint": "next lint"
   },
   "dependencies": {
@@ -27,7 +23,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
-    "formik": "^2.4.6",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.417.0",
     "next": "14.2.4",
@@ -40,7 +35,6 @@
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "usehooks-ts": "^3.1.0",
-    "yup": "^1.6.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {

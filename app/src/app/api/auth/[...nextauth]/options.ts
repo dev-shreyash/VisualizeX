@@ -5,7 +5,7 @@ import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from 'bcryptjs';
 import { signInSchema } from "@/schemas/signInSchema";
-import { dbPrimary } from "@/app/lib/database/primary-database";
+import { db } from "@/app/lib/database/database";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
         console.time('authorize')
         try {
           const parsedCredentials = signInSchema.parse(credentials);
-          const user = await dbPrimary.user.findFirst({
+          const user = await db.user.findFirst({
             where: {
               OR: [
                 { email: parsedCredentials.identifier },
@@ -78,7 +78,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   debug: true,
-  adapter: PrismaAdapter(dbPrimary),
+  adapter: PrismaAdapter(db),
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

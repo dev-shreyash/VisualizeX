@@ -1,4 +1,4 @@
-import { dbPrimary } from "@/app/lib/database/primary-database";
+import { db } from "@/app/lib/database/database";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const newEmail = email;
 
     // Find the user by username
-    const user = await dbPrimary.user.findUnique({
+    const user = await db.user.findUnique({
       where: { username },
     });
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     // Check if the new email is already in use
-    const existingUserByEmail = await dbPrimary.user.findUnique({
+    const existingUserByEmail = await db.user.findUnique({
       where: { email: newEmail },
     });
 
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     }
 
     // Update the user's email
-    const updatedUser = await dbPrimary.user.update({
+    const updatedUser = await db.user.update({
       where: { username },
       data: { email: newEmail },
     });

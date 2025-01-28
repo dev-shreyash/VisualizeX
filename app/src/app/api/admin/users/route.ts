@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { dbPrimary } from "@/app/lib/database/primary-database";
+import { db } from "@/app/lib/database/database";
 
 // Fetch all users
 export async function GET() {
   try {
-    const users = await dbPrimary.user.findMany({
+    const users = await db.user.findMany({
       select: {
         id: true,
         username: true,
@@ -30,7 +30,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    await dbPrimary.user.delete({
+    await db.user.delete({
       where: { id: parseInt(id) },
     });
 
@@ -53,7 +53,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const updatedUser = await dbPrimary.user.update({
+    const updatedUser = await db.user.update({
       where: { id: parseInt(id) },
       data: {
         ...(username && { username }),
@@ -77,7 +77,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "User ID and role are required" }, { status: 400 });
     }
 
-    const updatedUser = await dbPrimary.user.update({
+    const updatedUser = await db.user.update({
       where: { id: parseInt(id) },
       data: { role },
     });

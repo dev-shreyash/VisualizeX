@@ -1,13 +1,10 @@
-import { dbPrimary } from "@/app/lib/database/primary-database";
+import { db } from "@/app/lib/database/database";
 import { z } from "zod";
 import { usernameValidation } from "@/schemas/signUpSchema";
 
 const UsernameQuerySchema = z.object({
   username: usernameValidation,
 });
-
-export const dynamic = 'force-dynamic';
-
 
 export async function GET(request: Request) {
   try {
@@ -33,7 +30,7 @@ export async function GET(request: Request) {
 
     const { username } = result.data;
 
-    const existingUser = await dbPrimary.user.findFirst({
+    const existingUser = await db.user.findFirst({
       where: {
         username: username,
       }
