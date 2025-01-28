@@ -19,23 +19,20 @@ const Navbar = () => {
   }, [session.status]);
 
   useEffect(() => {
-    // Hide navbar after 5 seconds
-    const hideNavbarTimeout = setInterval(() => {
-      setIsVisible(false);
-    }, 5000);
-
-    // Show navbar on mouse hover at the top
-    const handleMouseMove = (event: MouseEvent) => {
-      if (event.clientY <= 50) {
-        setIsVisible(true);
+    const handleScroll = () => {
+      if (window.scrollY === 0) {
+        setIsVisible(true); // Show navbar when at the top
+      } else {
+        setIsVisible(false); // Hide navbar when not at the top
       }
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    // Listen for scroll events
+    window.addEventListener("scroll", handleScroll);
 
+    // Cleanup listener on unmount
     return () => {
-      clearTimeout(hideNavbarTimeout);
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -55,7 +52,9 @@ const Navbar = () => {
             isVisible ? "h-[64px] opacity-100" : "h-0 opacity-0"
           }`}
         >
-          <div className={`flex justify-between items-center p-5 text-white bg-gray-800 shadow-md ${isVisible ? "h-[64px]" : "h-0"}`}>
+          <div
+            className={`flex justify-between items-center p-5 text-white bg-gray-800 shadow-md ${isVisible ? "h-[64px]" : "h-0"}`}
+          >
             <div className="flex gap-2 items-center">
               <span
                 className="font-bold font-mono text-2xl cursor-pointer"
@@ -84,19 +83,20 @@ const Navbar = () => {
             </div>
             <div className="flex">
               {isLoggedIn ? (
-                <div className="flex items-center gap-2 cursor-pointer" onClick={()=> handlePageNavigation("/dashboard")}>
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => handlePageNavigation("/dashboard")}>
                   <Image
                     src={"/images/avatar.svg"}
                     alt="avatar"
                     width={40}
                     height={40}
                     className="rounded-full"
-                  ></Image>
+                  />
                   <span>{session.data?.user?.username}</span>
                 </div>
               ) : (
-                <Button className="font-bold bg-gray-600"
-                onClick={() => signIn()}>Log in</Button>
+                <Button className="font-bold bg-gray-600" onClick={() => signIn()}>
+                  Log in
+                </Button>
               )}
             </div>
           </div>
