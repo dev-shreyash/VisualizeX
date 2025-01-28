@@ -6,6 +6,9 @@ const UsernameQuerySchema = z.object({
   username: usernameValidation,
 });
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
