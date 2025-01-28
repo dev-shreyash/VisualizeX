@@ -15,6 +15,7 @@ export default function Home() {
      <span className="lowercase underline">
       Shreyash
      </span>
+     <span>Version: 0.0.1</span>
      <Button
             className="mb-2"
             onClick={() => (router.replace(`/dashboard`))}
