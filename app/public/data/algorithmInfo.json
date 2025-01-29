@@ -232,7 +232,401 @@
           "Sorting small or nearly sorted datasets.",
           "Used in practical applications like sorting small lists in algorithms that use a hybrid approach."
         ]
+      },
+      {
+        "key": "gnomeSort",
+        "algorithm": "Gnome Sort",
+        "description": "Gnome Sort is a simple comparison-based sorting algorithm that works by comparing and swapping adjacent elements, similar to insertion sort, but with a different approach. It is sometimes referred to as a 'stupid sort' because of its simplicity, but can be efficient for small datasets.",
+        "steps": [
+          "Start with the first element in the array.",
+          "Compare the current element with the previous one.",
+          "If the current element is smaller than the previous one, swap them and move one step back.",
+          "If the current element is greater than or equal to the previous one, move one step forward.",
+          "Repeat until the entire array is sorted."
+        ],
+        "keyConcepts": [
+          "Comparison",
+          "Swapping Elements",
+          "Step-by-Step Approach"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2) in the worst case, similar to bubble sort and insertion sort.",
+            "bestCase": "O(n) when the array is already sorted.",
+            "averageCase": "O(n^2)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "Simple to implement.",
+          "In-place sorting (no extra memory required).",
+          "Stable sorting algorithm (maintains the relative order of equal elements).",
+          "Works well for small datasets."
+        ],
+        "disadvantages": [
+          "Inefficient for large datasets with O(n²) time complexity.",
+          "Not widely used in practice due to inefficiency compared to other algorithms."
+        ],
+        "practicalUse": [
+          "Sorting small datasets.",
+          "Used in some educational contexts to teach sorting algorithms."
+        ]
+      },
+      {
+        "key": "combSort",
+        "algorithm": "Comb Sort",
+        "description": "Comb Sort is an improvement over Bubble Sort that works by comparing elements far apart and gradually reducing the gap between them. It eliminates small values at the end of the list more efficiently than Bubble Sort.",
+        "steps": [
+          "Start with a large gap value, typically the length of the array divided by a shrink factor (usually around 1.3).",
+          "Compare elements that are 'gap' positions apart.",
+          "If the elements are in the wrong order, swap them.",
+          "Reduce the gap size and repeat the process until the gap becomes 1.",
+          "Perform a final pass with gap size 1 to ensure all elements are sorted."
+        ],
+        "keyConcepts": [
+          "Gap Sequence",
+          "Swapping Elements",
+          "Reducing Gap"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2) for the worst-case scenario with the largest gap.",
+            "bestCase": "O(n log n) when the gap reduces effectively.",
+            "averageCase": "O(n log n)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "More efficient than Bubble Sort, especially for large datasets.",
+          "Simple to implement.",
+          "In-place sorting (no extra memory required)."
+        ],
+        "disadvantages": [
+          "Not a stable sorting algorithm.",
+          "Still not optimal for very large arrays compared to algorithms like Quick Sort or Merge Sort."
+        ],
+        "practicalUse": [
+          "Used in cases where Bubble Sort would be too slow.",
+          "Efficient for datasets where the number of swaps is reduced by using a gap sequence."
+        ]
+      },
+      {
+        "key": "oddEvenSort",
+        "algorithm": "Odd-Even Sort",
+        "description": "Odd-Even Sort is a parallel sorting algorithm that alternates between comparing and swapping elements in odd and even indexed positions. It operates in two phases: odd and even, which repeat until no swaps are made.",
+        "steps": [
+          "Start with the odd phase: compare odd indexed elements with the next even indexed element, and swap them if necessary.",
+          "Next, perform the even phase: compare even indexed elements with the next odd indexed element, and swap them if necessary.",
+          "Repeat the odd and even phases until no swaps are made, indicating the array is sorted."
+        ],
+        "keyConcepts": [
+          "Parallel Sorting",
+          "Alternating Phases",
+          "Swapping Elements"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2) when the array is in reverse order",
+            "bestCase": "O(n) when the array is already sorted",
+            "averageCase": "O(n^2)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "Simple to implement.",
+          "In-place sorting (no extra memory required).",
+          "Works well for small or partially sorted arrays."
+        ],
+        "disadvantages": [
+          "Inefficient for large datasets due to O(n²) time complexity.",
+          "Does not take advantage of sorted or partially sorted arrays in the worst case."
+        ],
+        "practicalUse": [
+          "Used in parallel processing environments or small datasets where simple sorting is needed."
+        ]
+      },
+      {
+        "key": "shellSort",
+        "algorithm": "Shell Sort",
+        "description": "Shell Sort is an in-place comparison-based sorting algorithm that generalizes insertion sort by allowing the exchange of items that are far apart. It starts by sorting elements far apart and gradually reducing the gap between elements to be compared.",
+        "steps": [
+          "Start with an initial gap size, typically half the length of the array.",
+          "Perform an insertion sort for elements that are at the current gap distance apart.",
+          "Gradually reduce the gap size and repeat the sorting steps.",
+          "Continue until the gap size becomes 1, performing a final insertion sort for the last elements."
+        ],
+        "keyConcepts": [
+          "Gap Reduction",
+          "Insertion Sort Optimization",
+          "In-Place Sorting"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2) for larger gaps, depending on the gap sequence",
+            "bestCase": "O(n log n) for certain gap sequences",
+            "averageCase": "O(n log n) for certain gap sequences"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "Improves upon insertion sort by allowing the exchange of distant elements.",
+          "Efficient for moderately large datasets.",
+          "In-place sorting (no extra memory required)."
+        ],
+        "disadvantages": [
+          "Performance heavily depends on the choice of gap sequence.",
+          "Inefficient for large datasets when using poor gap sequences."
+        ],
+        "practicalUse": [
+          "Used for sorting moderately large datasets.",
+          "Commonly used in scenarios where memory space is limited."
+        ]
+      },
+      {
+        "key": "pancakeSort",
+        "algorithm": "Pancake Sort",
+        "description": "Pancake Sort is a sorting algorithm that uses a series of flip operations to sort the array. The objective is to sort the array in ascending order by flipping the largest unsorted element to the top and then flipping it into its correct position.",
+        "steps": [
+          "Find the largest unsorted element in the array.",
+          "Flip the largest element to the front of the array.",
+          "Flip the largest element from the front to its correct position in the sorted portion.",
+          "Repeat the process for the next largest element until the entire array is sorted."
+        ],
+        "keyConcepts": [
+          "Flipping",
+          "Selection",
+          "Greedy Strategy"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2)",
+            "bestCase": "O(n)",
+            "averageCase": "O(n^2)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "Simple concept.",
+          "In-place sorting (no extra memory required)."
+        ],
+        "disadvantages": [
+          "Inefficient for large datasets.",
+          "Worst-case time complexity is quadratic."
+        ],
+        "practicalUse": [
+          "Primarily used as a teaching tool or in specialized applications where flipping operations are critical."
+        ]
+      },
+      {
+        "key": "bogoSort",
+        "algorithm": "Bogo Sort",
+        "description": "Bogo Sort is a highly inefficient sorting algorithm based on random shuffling. It repeatedly shuffles the elements in the array and checks if the array is sorted. It continues shuffling until the array is sorted.",
+        "steps": [
+          "Randomly shuffle the array.",
+          "Check if the array is sorted.",
+          "If sorted, stop; otherwise, repeat the process."
+        ],
+        "keyConcepts": [
+          "Randomness",
+          "Brute Force",
+          "Inefficiency"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O((n!)^2)",
+            "bestCase": "O(n)",
+            "averageCase": "O(n!)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "Simple to implement.",
+          "Conceptually easy to understand."
+        ],
+        "disadvantages": [
+          "Extremely inefficient for any practical use.",
+          "Worst-case time complexity is factorial."
+        ],
+        "practicalUse": [
+          "Not used in practice due to inefficiency.",
+          "Mainly used as a theoretical or educational tool."
+        ]
+      },
+      {
+        "key": "cycleSort",
+        "algorithm": "Cycle Sort",
+        "description": "Cycle Sort is a non-comparative sorting algorithm that is based on the idea of placing elements in their correct positions. It works by finding the correct position of each element and moving the elements into their correct position one at a time.",
+        "steps": [
+          "Start from the first element and find its correct position in the array.",
+          "Place the element in the correct position.",
+          "Repeat for all elements until the entire array is sorted."
+        ],
+        "keyConcepts": [
+          "Non-Comparative",
+          "Placement",
+          "In-Place Sorting"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2)",
+            "bestCase": "O(n^2)",
+            "averageCase": "O(n^2)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "In-place sorting.",
+          "Minimizes the number of swaps."
+        ],
+        "disadvantages": [
+          "Inefficient for large arrays.",
+          "Requires extra space for finding the correct position."
+        ],
+        "practicalUse": [
+          "Used in situations where minimizing the number of swaps is important."
+        ]
+      },
+      {
+        "key": "timSort",
+        "algorithm": "Tim Sort",
+        "description": "Tim Sort is a hybrid sorting algorithm derived from Merge Sort and Insertion Sort. It is designed to perform well on many kinds of real-world data, by exploiting the fact that real-world data often contains ordered sequences.",
+        "steps": [
+          "Split the array into smaller subarrays, each of which is sorted using Insertion Sort.",
+          "Merge the sorted subarrays using Merge Sort.",
+          "Repeat until the entire array is sorted."
+        ],
+        "keyConcepts": [
+          "Hybrid Sorting",
+          "Merge Sort",
+          "Insertion Sort"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n log n)",
+            "bestCase": "O(n)",
+            "averageCase": "O(n log n)"
+          },
+          "space": "O(n)"
+        },
+        "advantages": [
+          "Excellent performance on real-world datasets.",
+          "Adapts well to partially sorted data."
+        ],
+        "disadvantages": [
+          "More complex than other algorithms.",
+          "Extra memory usage for merging subarrays."
+        ],
+        "practicalUse": [
+          "Used in practice for sorting tasks where performance on real-world data is critical."
+        ]
+      },
+      {
+        "key": "heapSort",
+        "algorithm": "Heap Sort",
+        "description": "Heap Sort is a comparison-based sorting algorithm that uses a binary heap data structure. It first builds a max heap (or min heap) from the input data and then repeatedly extracts the root element from the heap and rebuilds the heap.",
+        "steps": [
+          "Build a max heap from the array.",
+          "Swap the root element (max value) with the last element.",
+          "Rebuild the heap after each extraction.",
+          "Repeat until the array is sorted."
+        ],
+        "keyConcepts": [
+          "Heap Data Structure",
+          "Selection",
+          "In-Place Sorting"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n log n)",
+            "bestCase": "O(n log n)",
+            "averageCase": "O(n log n)"
+          },
+          "space": "O(1)"
+        },
+        "advantages": [
+          "In-place sorting.",
+          "Time complexity is guaranteed to be O(n log n)."
+        ],
+        "disadvantages": [
+          "Slower than Merge Sort and Quick Sort in practice.",
+          "Not stable."
+        ],
+        "practicalUse": [
+          "Used in applications where in-place sorting is important and the data structure needs to support efficient element removal (priority queues)."
+        ]
+      },
+      {
+        "key": "radixSort",
+        "algorithm": "Radix Sort",
+        "description": "Radix Sort is a non-comparative sorting algorithm that sorts numbers by processing individual digits. It processes the numbers digit by digit, from the least significant digit to the most significant digit, using a stable sub-sorting algorithm like Counting Sort.",
+        "steps": [
+          "Group the numbers based on each digit, starting from the least significant digit.",
+          "Sort each group using a stable sub-sorting algorithm.",
+          "Repeat for all digits until the array is sorted."
+        ],
+        "keyConcepts": [
+          "Non-Comparative",
+          "Digit Processing",
+          "Stable Sorting"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(nk), where k is the number of digits",
+            "bestCase": "O(nk)",
+            "averageCase": "O(nk)"
+          },
+          "space": "O(n + k)"
+        },
+        "advantages": [
+          "Linear time complexity for large datasets when k is small.",
+          "Works well with fixed-length integers."
+        ],
+        "disadvantages": [
+          "Not suitable for non-integer data.",
+          "Needs extra memory for counting sort."
+        ],
+        "practicalUse": [
+          "Used in applications where the input has a fixed range or can be mapped to integers."
+        ]
+      },
+      {
+        "key": "bucketSort",
+        "algorithm": "Bucket Sort",
+        "description": "Bucket Sort is a distribution-based sorting algorithm that divides the input into several 'buckets'. Each bucket is then sorted individually (usually using another sorting algorithm), and the sorted buckets are combined to form the sorted array.",
+        "steps": [
+          "Divide the array into several 'buckets'.",
+          "Sort each bucket individually.",
+          "Concatenate the sorted buckets to form the sorted array."
+        ],
+        "keyConcepts": [
+          "Distribution-Based Sorting",
+          "Buckets",
+          "Divide and Conquer"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n^2) if each bucket has only one element",
+            "bestCase": "O(n + k) where k is the number of buckets",
+            "averageCase": "O(n + k)"
+          },
+          "space": "O(n + k)"
+        },
+        "advantages": [
+          "Can achieve linear time complexity with uniform distribution.",
+          "Efficient for sorting data that is uniformly distributed."
+        ],
+        "disadvantages": [
+          "Not efficient for small ranges or non-uniform data.",
+          "Needs extra space for the buckets."
+        ],
+        "practicalUse": [
+          "Used in applications where input data is uniformly distributed."
+        ]
       }
+      
+      
+      
+      
       
       
       

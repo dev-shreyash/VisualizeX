@@ -72,6 +72,30 @@ export default function Visualizer({
       (await import("@/utils/algorithms/selectionSort")).selectionSort(data),
     insertionSort: async (data: number[]) =>
       (await import("@/utils/algorithms/insertionSort")).insertionSort(data),
+    gnomeSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/gnomeSort")).gnomeSort(data),
+    combSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/combSort")).combSort(data),
+    pancakeSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/pancakeSort")).pancakeSort(data),
+    
+    bogoSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/bogoSort")).bogoSort(data),
+    
+    cycleSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/cycleSort")).cycleSort(data),
+    
+    timSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/timSort")).timSort(data),
+    
+    heapSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/heapSort")).heapSort(data),
+    
+    radixSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/radixSort")).radixSort(data),
+    
+    bucketSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/bucketSort")).bucketSort(data),
   };
 
   // Reset states when user data changes

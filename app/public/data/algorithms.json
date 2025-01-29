@@ -40,5 +40,83 @@
     "description": "An efficient algorithm for small or partially sorted arrays.",
     "image": "/images/insertionSort.jpeg",
     "route": "/visualizer/insertionSort"
+  },
+  {
+    "key": "gnomeSort",
+    "name": "Gnome Sort",
+    "description": "A simple comparison-based sorting algorithm that swaps elements in a manner similar to insertion sort.",
+    "image": "/images/gnomeSort.jpeg",
+    "route": "/visualizer/gnomeSort"
+  },
+  {
+    "key": "combSort",
+    "name": "Comb Sort",
+    "description": "An improvement over Bubble Sort that reduces the gap between elements gradually for more efficiency.",
+    "image": "/images/combSort.jpeg",
+    "route": "/visualizer/combSort"
+  },
+  {
+    "key": "oddEvenSort",
+    "name": "Odd-Even Sort",
+    "description": "A parallel sorting algorithm that alternates between odd and even indexed positions for comparisons and swaps.",
+    "image": "/images/oddEvenSort.jpeg",
+    "route": "/visualizer/oddEvenSort"
+  },
+  {
+    "key": "shellSort",
+    "name": "Shell Sort",
+    "description": "An in-place algorithm that generalizes insertion sort by allowing the exchange of far-apart elements.",
+    "image": "/images/shellSort.jpeg",
+    "route": "/visualizer/shellSort"
+  },
+  {
+    "key": "pancakeSort",
+    "name": "Pancake Sort",
+    "description": "A sorting algorithm that uses flip operations to move the largest unsorted element to its correct position.",
+    "image": "/images/pancakeSort.jpeg",
+    "route": "/visualizer/pancakeSort"
+  },
+  {
+    "key": "bogoSort",
+    "name": "Bogo Sort",
+    "description": "An inefficient sorting algorithm that shuffles elements randomly until the array is sorted.",
+    "image": "/images/bogoSort.jpeg",
+    "route": "/visualizer/bogoSort"
+  },
+  {
+    "key": "cycleSort",
+    "name": "Cycle Sort",
+    "description": "A non-comparative sorting algorithm that places elements in their correct positions by rotation.",
+    "image": "/images/cycleSort.jpeg",
+    "route": "/visualizer/cycleSort"
+  },
+  {
+    "key": "timSort",
+    "name": "Tim Sort",
+    "description": "A hybrid algorithm derived from Merge Sort and Insertion Sort, optimized for real-world data.",
+    "image": "/images/timSort.jpeg",
+    "route": "/visualizer/timSort"
+  },
+  {
+    "key": "heapSort",
+    "name": "Heap Sort",
+    "description": "A comparison-based algorithm that builds a heap and extracts elements in sorted order.",
+    "image": "/images/heapSort.jpeg",
+    "route": "/visualizer/heapSort"
+  },
+  {
+    "key": "radixSort",
+    "name": "Radix Sort",
+    "description": "A non-comparative algorithm that sorts numbers by processing their individual digits.",
+    "image": "/images/radixSort.jpeg",
+    "route": "/visualizer/radixSort"
+  },
+  {
+    "key": "bucketSort",
+    "name": "Bucket Sort",
+    "description": "A distribution-based algorithm that sorts elements by dividing them into buckets and sorting each bucket.",
+    "image": "/images/bucketSort.jpeg",
+    "route": "/visualizer/bucketSort"
   }
+
 ]
