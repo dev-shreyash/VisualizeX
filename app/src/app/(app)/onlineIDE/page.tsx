@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
 import { useSessionData } from "@/app/hooks/useSessionData";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { set } from "zod";
+import Image from "next/image";
+import { saveCode } from "@/app/api/saveCode/route";
+import { useToast } from "@/components/ui/use-toast";
+
 
 function OnlineIDE() {
   const { session, status } = useSessionData();
@@ -20,6 +25,14 @@ function OnlineIDE() {
   const [commentSymbols, setCommentSymbols] = useState<string[]>([]);
   const [terminalHistory, setTerminalHistory] = useState<string[]>([]); // Terminal History
   const [userData, setUserData] = useState<number[]>([]); // Initialized to an empty array
+
+  const [code, setCode] = useState<string>("");
+
+  const [username, setUserName] = useState<string>("");
+  const [language, setLanguage] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const { toast } = useToast();
+
 
   const tabs = [
     { id: "1", label: "Python", key: "python" },
@@ -44,20 +57,60 @@ function OnlineIDE() {
     }
   }, [selectedTab]);
 
+
+  useEffect(() => {
+   setUserName(session?.user.username || "");
+   setLanguage(tabs.find((tab) => tab.id === selectedTab)?.key || "");
+  }, [username, language, tabs]); 
+
   useEffect(() => {
     if (status === "authenticated") {
       setUserStatus(true);
-      setEditorContent(
-        tabs.reduce(
-          (acc, tab) => ({
-            ...acc,
-            [tab.key]: `${commentSymbols}Write your ${tab.label} code here\n${commentSymbols}sort the below given array with bubble sort\narr=[${userData}]\n`,
-          }),
-          {}
-        )
-      );
+      console.log(username, language);
+      if (!username || !language) return; // Skip if either is missing
+  
+      let isMounted = true; // To prevent state updates after unmount
+    
+      axios
+        .get(`${process.env.NEXT_PUBLIC_API_URL}/code/${username}`, {
+          params: { language },
+        })
+        .then((response) => {
+          console.log("user code", response.data[0]?.code);
+          if(response.data[0]?.code === undefined) {
+            setEditorContent(
+              tabs.reduce(
+                (acc, tab) => ({
+                  ...acc,
+                  [tab.key]: `${commentSymbols}Write your ${tab.label} code here\n${commentSymbols}sort the below given array with bubble sort\narr=[${userData}]\n`,
+                }),
+                {}
+              )
+            );
+          }
+          else{
+          setEditorContent(
+            tabs.reduce(
+              (acc, tab) => ({
+                ...acc,
+                [tab.key]: `${response.data[0]?.code}`,
+              }),
+              {}
+            )
+          );
+        }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            setError("Failed to fetch code");
+            console.error(err);
+          }
+        });
+    
+      
+      
     }
-  }, [status, commentSymbols, userData]);
+  }, [status, commentSymbols, userData, username, language]);
 
   const handleRunCode = async () => {
     const currentTab = tabs.find((tab) => tab.id === selectedTab);
@@ -153,6 +206,34 @@ function OnlineIDE() {
     return <div>Please log in to access this feature</div>;
   }
 
+
+
+  const handleSubmitCode = async () => {
+    const code = editorContent?.[language];
+    console.log(code)
+    console.log(language, username,);
+    if (language && username && code) {
+      const result = await saveCode(language, username, code);
+      
+      if (result.message) {
+        toast({
+          title: "Success",
+          description: result.message,
+          variant: "default",
+        });
+      } else if (result.error) {
+        toast({
+          title: "Failed to save code",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } else {
+      alert("Please provide valid code, username, and language.");
+    }
+  };
+  
+
   return (
     <div className="flex min-h-screen bg-gray-100 p-4 w-full">
       <div className="flex-col w-full border bg-slate-200 rounded-md shadow-md pb-4">
@@ -184,6 +265,21 @@ function OnlineIDE() {
 
         </div>
         <div className="flex w-full max-w-4xl justify-end items-center ">
+          <div className="relative group">
+              <button onClick={handleSubmitCode} className="p-2">
+              <Image
+              src={"/images/save.svg"}
+              alt="save"
+              width={30}
+              height={30}
+              className="rounded-full cursor-pointer h"
+            />
+              </button>
+
+              <div className="absolute left-1/2 w-20 transform -translate-x-1/2  mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
+                Save code
+              </div>
+            </div>
             <h1>User:{session?.user.email}</h1>
         </div>
         </div>
