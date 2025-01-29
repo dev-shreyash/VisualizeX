@@ -1,3 +1,4 @@
+import { oddEvenSort } from "@/utils/algorithms/oddEvenSort";
 import { useEffect, useState, useRef } from "react";
 
 interface VisualizerProps {
@@ -76,6 +77,10 @@ export default function Visualizer({
       (await import("@/utils/algorithms/gnomeSort")).gnomeSort(data),
     combSort: async (data: number[]) =>
       (await import("@/utils/algorithms/combSort")).combSort(data),
+    shellSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/shellSort")).shellSort(data),
+    oddEvenSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/oddEvenSort")).oddEvenSort(data),
     pancakeSort: async (data: number[]) =>
       (await import("@/utils/algorithms/pancakeSort")).pancakeSort(data),
     
