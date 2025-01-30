@@ -1,4 +1,3 @@
-import { oddEvenSort } from "@/utils/algorithms/oddEvenSort";
 import { useEffect, useState, useRef } from "react";
 
 interface VisualizerProps {
@@ -101,6 +100,9 @@ export default function Visualizer({
     
     bucketSort: async (data: number[]) =>
       (await import("@/utils/algorithms/bucketSort")).bucketSort(data),
+    introspectiveSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/introspectiveSort")).introspectiveSort(data),
+    
   };
 
   // Reset states when user data changes

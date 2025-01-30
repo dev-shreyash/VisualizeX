@@ -221,6 +221,10 @@ export default function Visualizer({
       
       bucketSort: async (data: number[]) =>
         (await import("@/utils/algorithms/bucketSort")).bucketSort(data),
+
+      introspectiveSort: async (data: number[]) =>
+        (await import("@/utils/algorithms/introspectiveSort")).introspectiveSort(data),
+      
   };
 
   const startTimeRef = useRef<number | null>(null);

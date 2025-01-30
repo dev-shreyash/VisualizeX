@@ -211,12 +211,12 @@ export default function AlgorithmVisualization() {
       <p className="text-gray-600 text-center mb-8">
         {algorithmData.description}
       </p>
-
+  
       <div className="flex flex-col gap-8">
         {/* Control Panel */}
-        <div className="p-4 border rounded-md shadow-md flex m-auto w-[80%] items-center justify-center gap-8">
+        <div className="p-4 border rounded-md shadow-md flex flex-col sm:flex-row m-auto w-full sm:w-[80%] items-center justify-center gap-8">
           <h2 className="text-xl font-semibold mb-4">Controls</h2>
-          <div className="container flex gap-2 items-center">
+          <div className="container flex flex-col sm:flex-row gap-2 items-center">
             <Button disabled={isSorting} onClick={generateArray}>
               Generate New Array
             </Button>
@@ -241,7 +241,7 @@ export default function AlgorithmVisualization() {
               />
             )}
           </div>
-
+  
           <Button
             disabled={isSorting || userData.length === 0}
             onClick={resetArray}
@@ -266,8 +266,8 @@ export default function AlgorithmVisualization() {
           >
             Pause
           </Button>
-
-          <div className="relative w-1/2 flex flex-col items-center justify-center group-hover:block">
+  
+          <div className="relative w-full sm:w-1/2 flex flex-col items-center justify-center group-hover:block">
             <input
               type="range"
               min="0.00"
@@ -293,10 +293,10 @@ export default function AlgorithmVisualization() {
             </div>
           </div>
         </div>
-
+  
         {/* Visualization Windows */}
-        <div className="container flex gap-3 ">
-          <div className="flex  flex-col gap-3 w-[60%] ">
+        <div className="flex flex-col lg:flex-row gap-3">
+          <div className="flex flex-col gap-3 w-full lg:w-[60%]">
             <div className="flex-1 p-4 border rounded-md shadow-md">
               <h2 className="text-xl font-semibold mb-4">
                 Bar Chart Visualization
@@ -324,40 +324,40 @@ export default function AlgorithmVisualization() {
                   Sorting completed in {sortingTime} seconds. speed {speed}X
                 </div>
               )}
-              <div className="container flex h-full gap-3 p-4">
-                <div className="flex-col">
-                  <div className="flex gap-2 items-center m-auto">
-                    <div className="w-4 h-4 rounded-lg bg-[#ffcc00]"></div>
-                    <p>- Pivot</p>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    {" "}
-                    <div className="w-4 h-4 rounded-lg bg-[#ff5733]"></div>
-                    <p>- Current left Index </p>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <div className="w-4 h-4 rounded-lg bg-sky-300"></div>
-                    <p>- Current right Index</p>
-                  </div>
-                </div>
-                <div className="flex-col">
-                  <div className="flex gap-2 items-center">
-                    <div className="w-4 h-4 rounded-lg bg-blue-700"></div>
-                    <p>- Comparison</p>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <div className="w-4 h-4 rounded-lg bg-black"></div>
-                    <p>- Swap</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+             <div className="flex h-full gap-3 p-4 lg:text-lg sm:text-xxs w-full">
+  <div className="flex-col">
+    <div className="flex gap-2 items-center m-auto">
+      <div className="w-4 h-4 rounded-lg bg-[#ffcc00]"></div>
+      <p className="lg:text-lg sm:text-xxs">- Pivot</p>
+    </div>
+    <div className="flex gap-2 items-center">
+      <div className="w-4 h-4 rounded-lg bg-[#ff5733]"></div>
+      <p className="lg:text-lg sm:text-xxs">- Current left Index</p>
+    </div>
+    <div className="flex gap-2 items-center">
+      <div className="w-4 h-4 rounded-lg bg-sky-300"></div>
+      <p className="lg:text-lg sm:text-xxs">- Current right Index</p>
+    </div>
+  </div>
+  <div className="flex-col">
+    <div className="flex gap-2 items-center">
+      <div className="w-4 h-4 rounded-lg bg-blue-700"></div>
+      <p className="lg:text-lg sm:text-xxs">- Comparison</p>
+    </div>
+    <div className="flex gap-2 items-center">
+      <div className="w-4 h-4 rounded-lg bg-black"></div>
+      <p className="lg:text-lg sm:text-xxs">- Swap</p>
+    </div>
+  </div>
+</div>
 
-            <div className="flex-1 p-4 border rounded-md shadow-md ">
+            </div>
+  
+            <div className="flex-1 p-4 border rounded-md shadow-md">
               <h2 className="text-xl font-semibold mb-4">
                 Array Visualization
               </h2>
-              <div id="arrayView" className="h-14 w-full p-4 bg-gray-100">
+              <div id="arrayView" className="h-14 w-full p-4 bg-gray-100 overflow-hidden  sm:text-sm">
                 <ArrayVisualizer
                   // steps={steps}
                   isSorting={isSorting}
@@ -369,25 +369,13 @@ export default function AlgorithmVisualization() {
                     throw new Error("Function not implemented.");
                   }}
                 />
-                {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
-                  <div className="flex flex-wrap gap-2">
-                    {userData.map((num, index) => (
-                      <div
-                        key={index}
-                        className="w-10 h-10 flex items-center justify-center border rounded bg-gray-100 text-black"
-                      >
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                </div> */}
               </div>
             </div>
-            <div className="flex-1 p-4 border rounded-md shadow-md ">
+            <div className="flex-1 p-4 border rounded-md shadow-md">
               <h2 className="text-xl font-semibold mb-4">
                 User Data (Original Array)
               </h2>
-              <div id="LogView" className=" w-full  bg-gray-100">
+              <div id="LogView" className="w-full bg-gray-100">
                 <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
                   <div className="flex flex-wrap gap-2">
                     {userData.map((num, index) => (
@@ -403,10 +391,10 @@ export default function AlgorithmVisualization() {
               </div>
             </div>
           </div>
-
-          <div className="flex-1 p-4 border rounded-md shadow-md w-[40%]">
+  
+          <div className="flex-1 p-4 border rounded-md shadow-md w-full lg:w-[40%]">
             <h2 className="text-xl font-semibold mb-4">Steps Viewer</h2>
-            <div id="LogView" className=" w-full  bg-gray-100">
+            <div id="LogView" className="w-full bg-gray-100">
               <LogViewer
                 //steps={steps}
                 isSorting={isSorting}
@@ -415,28 +403,15 @@ export default function AlgorithmVisualization() {
                 userData={userData}
                 algorithm={algorithmData}
               />
-              {/* <div className="bg-gray-800 text-white p-4 rounded-md overflow-clip">
-                  <div className="flex flex-wrap gap-2">
-                    {userData.map((num, index) => (
-                      <div
-                        key={index}
-                        className="w-10 h-10 flex items-center justify-center border rounded bg-gray-100 text-black"
-                      >
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                </div> */}
             </div>
           </div>
         </div>
-
-        <div className="container flex gap-3">
+  
+        <div className=" flex flex-col lg:flex-row gap-3 ">
           <AlgoInfo algorithm={algorithmData} />
-          <div className="flex-1 p-4 border rounded-md shadow-md w-[40%]">
+          <div className="flex-1 p-4 border rounded-md shadow-md w-full lg:w-[40%]">
             <h2 className="text-xl font-semibold mb-4">Algorithm Code</h2>
             <pre className="bg-gray-800 text-white p-4 rounded-md">
-              {/* Insert algorithm code here */}
               <div className="flex flex-wrap gap-2">
                 <CodeTabs algorithm={algorithmData} />
                 <hr />
@@ -453,4 +428,5 @@ export default function AlgorithmVisualization() {
       </div>
     </div>
   );
+  
 }

@@ -622,7 +622,47 @@
         "practicalUse": [
           "Used in applications where input data is uniformly distributed."
         ]
+      },
+      {
+        "key": "introspectiveSort",
+        "algorithm": "Introspective Sort",
+        "description": "Introspective Sort is a hybrid sorting algorithm that combines QuickSort, HeapSort, and Insertion Sort. It starts with QuickSort and switches to HeapSort when recursion depth exceeds a threshold, ensuring O(n log n) worst-case performance.",
+        "steps": [
+          "Start with QuickSort for partitioning the array.",
+          "Monitor recursion depth; if it exceeds a threshold, switch to HeapSort.",
+          "Use Insertion Sort for small subarrays to optimize performance.",
+          "Continue sorting until the array is fully sorted."
+        ],
+        "keyConcepts": [
+          "Hybrid Sorting",
+          "QuickSort Partitioning",
+          "HeapSort for Worst Case",
+          "Insertion Sort for Small Arrays"
+        ],
+        "complexity": {
+          "time": {
+            "worstCase": "O(n log n) (due to HeapSort fallback)",
+            "bestCase": "O(n log n) (QuickSort efficiency)",
+            "averageCase": "O(n log n)"
+          },
+          "space": "O(log n) (due to recursive calls)"
+        },
+        "advantages": [
+          "Efficient hybrid approach ensuring worst-case O(n log n).",
+          "Uses QuickSort for average-case speed.",
+          "HeapSort prevents worst-case QuickSort inefficiency.",
+          "Insertion Sort optimizes small subarrays."
+        ],
+        "disadvantages": [
+          "More complex than individual sorting algorithms.",
+          "Requires careful implementation to determine recursion depth."
+        ],
+        "practicalUse": [
+          "Used in C++ STL’s std::sort implementation.",
+          "Ideal for general-purpose sorting in high-performance applications."
+        ]
       }
+      
       
       
       

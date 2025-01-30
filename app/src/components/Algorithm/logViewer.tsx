@@ -158,6 +158,10 @@ export default function LogViewer({
     
     bucketSort: async (data: number[]) =>
       (await import("@/utils/algorithms/bucketSort")).bucketSort(data),
+
+    introspectiveSort: async (data: number[]) =>
+      (await import("@/utils/algorithms/introspectiveSort")).introspectiveSort(data),
+    
   };
 
   useEffect(() => {

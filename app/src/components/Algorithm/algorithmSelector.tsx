@@ -22,6 +22,7 @@ export default function AlgorithmSelector({
 }: AlgorithmSelectorProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [algorithms, setAlgorithms] = useState<Algorithm[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   // Load algorithm data from JSON file
@@ -50,14 +51,32 @@ export default function AlgorithmSelector({
     }
   };
 
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
+
+  const filteredAlgorithms = algorithms.filter((algo) =>
+    algo.name.toLowerCase().includes(searchQuery)
+  );
+
   return (
     <div className="p-6 w-full">
       <h1 className="text-2xl font-bold text-center mb-6">Select an Algorithm</h1>
-      <div className="flex flex-wrap justify-center w-full ">
-        {algorithms.map((algo) => (
+      {/* Search Bar */}
+      <div className="m-auto w-full text-center mb-4">
+        <input
+          type="text"
+          placeholder="Search algorithm by name..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="w-[80%] lg:w-[40%] p-2 border text-sm text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center w-full ">
+        {filteredAlgorithms.map((algo) => (
           <div
             key={algo.key}
-            className={`container h-[300px] w-[400px] bg-white border border-gray-300  rounded-md flex flex-col items-center gap-4 p-5 m-5 cursor-pointer shadow-md transition-transform duration-200 ${
+            className={`h-[350px] bg-white border border-gray-300 rounded-md flex flex-col items-center gap-4 p-5 cursor-pointer shadow-md transition-transform duration-200 hover:shadow-lg hover:scale-105 ${
               selectedAlgorithm === algo.key ? "bg-blue-100 scale-105" : ""
             }`}
             onClick={() => handleAlgorithmSelection(algo.key)}
@@ -65,7 +84,7 @@ export default function AlgorithmSelector({
             <Image
               src={algo.image}
               alt={`${algo.name} visualization`}
-              className="w-full h-40 object-cover rounded-md"
+              className="w-full h-40 object-cover rounded-md hover:scale-105 transition-transform duration-200"
               width={400}
               height={300}
             />
