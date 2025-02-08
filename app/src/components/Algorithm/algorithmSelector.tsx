@@ -1,7 +1,10 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { HoverEffect } from "@/components/ui/hoverEffect"; // Ensure correct import path
+import { PlaceholdersAndVanishInput } from "../ui/placeholder-and-vanish-input";
 
 interface Algorithm {
   key: string;
@@ -25,9 +28,17 @@ export default function AlgorithmSelector({
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  // Load algorithm data from JSON file
+
+  const placeholders = [
+    "Selection Sort Algorithm",
+    "Merge Sort Algorithm",
+    "Radix Sort Algorithm",
+    "Heap Sort Algorithm",
+    "Bogo Sort Algorithm",
+  ];
+
   useEffect(() => {
-    setIsMounted(true); // Ensures the component is mounted.
+    setIsMounted(true);
     const fetchAlgorithms = async () => {
       const response = await fetch("/data/algorithms.json");
       const data = await response.json();
@@ -37,17 +48,15 @@ export default function AlgorithmSelector({
     fetchAlgorithms();
   }, []);
 
-  useEffect(() => {
-    console.log("Selected Algorithm: ", selectedAlgorithm);
-  }, [selectedAlgorithm]);
-
-  if (!isMounted || algorithms.length === 0) return <div className="text-center h-screen">Loading...</div>; // Prevent rendering until mounted and data is loaded.
+  if (!isMounted || algorithms.length === 0) {
+    return <div className="text-center h-screen">Loading...</div>;
+  }
 
   const handleAlgorithmSelection = (key: string) => {
     setSelectedAlgorithm(key);
     const selectedAlgorithm = algorithms.find((algo) => algo.key === key);
     if (selectedAlgorithm) {
-      router.push(selectedAlgorithm.route); // Navigate to the visualization page.
+      router.push(selectedAlgorithm.route);
     }
   };
 
@@ -59,40 +68,41 @@ export default function AlgorithmSelector({
     algo.name.toLowerCase().includes(searchQuery)
   );
 
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSearchQuery(e.currentTarget.value.toLowerCase());
+  };
+
   return (
-    <div className="p-6 w-full">
-      <h1 className="text-2xl font-bold text-center mb-6">Select an Algorithm</h1>
+    <div className="p-6 w-full ">
+      <h1 className="text-2xl text-gray-700 font-bold text-center mb-6">Select an Algorithm</h1>
+
       {/* Search Bar */}
       <div className="m-auto w-full text-center mb-4">
-        <input
+        {/* <input
           type="text"
           placeholder="Search algorithm by name..."
           value={searchQuery}
           onChange={handleSearch}
           className="w-[80%] lg:w-[40%] p-2 border text-sm text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-        />
+        /> */}
+         <PlaceholdersAndVanishInput
+        placeholders={placeholders}
+        onChange={handleSearch}
+        onSubmit={(e) => onSubmit(e)}
+      />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center w-full ">
-        {filteredAlgorithms.map((algo) => (
-          <div
-            key={algo.key}
-            className={`h-[350px] bg-white border border-gray-300 rounded-md flex flex-col items-center gap-4 p-5 cursor-pointer shadow-md transition-transform duration-200 hover:shadow-lg hover:scale-105 ${
-              selectedAlgorithm === algo.key ? "bg-blue-100 scale-105" : ""
-            }`}
-            onClick={() => handleAlgorithmSelection(algo.key)}
-          >
-            <Image
-              src={algo.image}
-              alt={`${algo.name} visualization`}
-              className="w-full h-40 object-cover rounded-md hover:scale-105 transition-transform duration-200"
-              width={400}
-              height={300}
-            />
-            <span className="text-gray-700 text-lg font-semibold">{algo.name}</span>
-            <p className="text-gray-500 text-sm text-center">{algo.description}</p>
-          </div>
-        ))}
-      </div>
+
+      {/* Algorithm Cards with Hover Effect */}
+      <HoverEffect
+        items={filteredAlgorithms.map((algo) => ({
+          title: algo.name,
+          description: algo.description,
+          image: algo.image,
+          link: algo.route, // Fix: Now correctly navigates
+        }))}
+        className="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center w-full"
+      />
     </div>
   );
 }

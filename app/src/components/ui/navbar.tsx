@@ -3,7 +3,7 @@
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Button } from "./button";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 
 const Navbar = () => {
@@ -12,6 +12,7 @@ const Navbar = () => {
   const [isVisible, setIsVisible] = useState(true); // Navbar visibility state
   const [isMenuOpen, setIsMenuOpen] = useState(false); // State for hamburger menu
   const router = useRouter();
+  const pathname = usePathname()
 
   useEffect(() => {
     if (session.status === "authenticated") {
@@ -46,16 +47,16 @@ const Navbar = () => {
     <>
       <div
         className={`transition-all duration-300 ${
-          isVisible ? "h-[75px]" : "h-0"
+          isVisible ? "h-[65px]" : "h-0"
         }`}
       >
         <div
-          className={`fixed top-0 left-0 w-full z-50 bg-gray-800 shadow-md transition-all duration-300 ${
+          className={`fixed top-0 left-0 w-full z-50  bg-black   transition-all duration-300 ${
             isVisible ? "h-[64px] opacity-100" : "h-0 opacity-0"
           }`}
         >
           <div
-            className={`flex justify-start gap-2 items-center p-5 text-white bg-gray-800 shadow-md ${isVisible ? "h-[64px]" : "h-0"}`}
+            className={`flex justify-start gap-2 items-center p-5 text-white bg-black   ${isVisible ? "h-[64px]" : "h-0"}`}
           >
             <div className="flex gap-2 items-center">
               <span
@@ -89,19 +90,20 @@ const Navbar = () => {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex gap-2 justify-start">
               <Button
-                className="font-bold bg-gray-600"
+                className={`font-bold rounded-3xl hover:text-black hover:bg-gray-200 transition-all duration-300 ${pathname === "/Algorithms" ? "bg-gray-600 " : "bg-transparent underline`"} `}
                 onClick={() => handlePageNavigation("/Algorithms")}
               >
                 Algorithm Selector
               </Button>
               <Button
-                className="font-bold bg-gray-600"
+              
+                className={`font-bold rounded-3xl hover:text-black hover:bg-gray-200 transition-all duration-300 ${pathname === "/onlineIDE" ? "bg-gray-600" : "bg-transparent underline`"} `}
                 onClick={() => handlePageNavigation("/onlineIDE")}
               >
                 Online IDE
               </Button>
               <Button
-                className="font-bold bg-transparent underline"
+                className={`font-bold rounded-3xl hover:text-black hover:bg-gray-200 transition-all duration-300 ${pathname === "/HowTo" ? "bg-gray-600" : "bg-transparent underline`"} `}
                 onClick={() => handlePageNavigation("/HowTo")}
               >
                 How to use
