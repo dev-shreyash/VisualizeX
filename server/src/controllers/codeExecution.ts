@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 import type { Handler } from "elysia";
 import { writeFileSync, rmSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
@@ -20,12 +20,22 @@ const restrictedPatterns = [
 ];
 
 /**
- * Checks and automatically installs missing dependencies for Python and JavaScript.
- * For Java, C, C++, and C#, it scans for import/include/using statements and logs warnings
- * if non‑standard dependencies are detected (auto‑installation is not supported for these languages).
+ * Checks if a given command is available on the system.
+ * Uses "which" on Linux/Mac and "where" on Windows.
  */
-const ensureDependencies = async (code: string, language: string) => {
+const checkCommandAvailability = (cmd: string): boolean => {
+  const whichCommand = process.platform === "win32" ? "where" : "which";
+  const result = spawnSync(whichCommand, [cmd], { encoding: "utf8" });
+  return result.status === 0;
+};
+
+/**
+ * Checks and automatically installs missing dependencies for interpreted languages
+ * and scans for import/include/using statements for compiled languages.
+ */
+const ensureDependencies = async (code: string, language: string): Promise<void> => {
   if (language === "python") {
+    // Extract library names from "import" and "from" statements.
     const importMatches = [...code.matchAll(/^import\s+([\w\d_]+)/gm)];
     const fromMatches = [...code.matchAll(/^from\s+([\w\d_]+)\s+import/gm)];
     const libraries = Array.from(new Set([
@@ -38,7 +48,6 @@ const ensureDependencies = async (code: string, language: string) => {
         const checkCmd = spawn("python3", ["-c", `import ${lib}`]);
         checkCmd.on("close", (code) => resolve(code === 0));
       });
-
       if (!isInstalled) {
         console.log(`Installing missing Python package: ${lib}`);
         await new Promise<void>((resolve, reject) => {
@@ -62,7 +71,6 @@ const ensureDependencies = async (code: string, language: string) => {
         const checkCmd = spawn("npm", ["list", lib]);
         checkCmd.on("close", (code) => resolve(code === 0));
       });
-
       if (!isInstalled) {
         console.log(`Installing missing JavaScript package: ${lib}`);
         await new Promise<void>((resolve, reject) => {
@@ -73,7 +81,9 @@ const ensureDependencies = async (code: string, language: string) => {
         });
       }
     }
-  } else if (language === "java") {
+  }
+  // For compiled languages, we simply scan and warn.
+  else if (language === "java") {
     const importMatches = [...code.matchAll(/^import\s+([\w.]+);/gm)];
     const libraries = Array.from(new Set(importMatches.map(m => m[1])));
     libraries.forEach(lib => {
@@ -110,15 +120,116 @@ const ensureDependencies = async (code: string, language: string) => {
   }
 };
 
+// Helper: Check if the current process is elevated on Windows.
+const isElevatedWindows = (): boolean => {
+  if (process.platform !== "win32") return true; // not Windows, so ignore.
+  try {
+    // "net session" requires admin rights. If it fails, we are not elevated.
+    const result = spawnSync("net", ["session"], { stdio: "ignore" });
+    return result.status === 0;
+  } catch (err) {
+    return false;
+  }
+};
+
 /**
+ * Attempts to check for and install the required compiler if it is not installed.
+ * On Windows, if not running in an elevated shell, it throws an error instructing the user.
+ */
+const checkAndInstallCompiler = async (language: string): Promise<void> => {
+  let compiler = "";
+  let installCommand: string[] = [];
+  
+  switch (language) {
+    case "java":
+      compiler = "javac";
+      if (!checkCommandAvailability(compiler)) {
+        console.warn(`Compiler ${compiler} not found.`);
+        if (process.platform === "linux") {
+          installCommand = ["sudo", "apt-get", "update"];
+          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
+          installCommand = ["sudo", "apt-get", "install", "-y", "default-jdk"];
+        } else if (process.platform === "win32") {
+          if (!isElevatedWindows()) {
+            throw new Error("Automatic installation of Java (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install Java manually.");
+          }
+          installCommand = ["choco", "install", "jdk8", "-y"];
+        } else {
+          throw new Error(`Compiler ${compiler} is not installed and automatic installation is not supported on this platform.`);
+        }
+      }
+      break;
+    case "c":
+      compiler = "gcc";
+      if (!checkCommandAvailability(compiler)) {
+        console.warn(`Compiler ${compiler} not found.`);
+        if (process.platform === "linux") {
+          installCommand = ["sudo", "apt-get", "update"];
+          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
+          installCommand = ["sudo", "apt-get", "install", "-y", "build-essential"];
+        } else if (process.platform === "win32") {
+          if (!isElevatedWindows()) {
+            throw new Error("Automatic installation of GCC (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install GCC manually.");
+          }
+          installCommand = ["choco", "install", "mingw", "-y"];
+        } else {
+          throw new Error(`Compiler ${compiler} is not installed and automatic installation is not supported on this platform.`);
+        }
+      }
+      break;
+    case "c++":
+      compiler = "g++";
+      if (!checkCommandAvailability(compiler)) {
+        console.warn(`Compiler ${compiler} not found.`);
+        if (process.platform === "linux") {
+          installCommand = ["sudo", "apt-get", "update"];
+          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
+          installCommand = ["sudo", "apt-get", "install", "-y", "build-essential"];
+        } else if (process.platform === "win32") {
+          if (!isElevatedWindows()) {
+            throw new Error("Automatic installation of G++ (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install G++ manually.");
+          }
+          installCommand = ["choco", "install", "mingw", "-y"];
+        } else {
+          throw new Error(`Compiler ${compiler} is not installed and automatic installation is not supported on this platform.`);
+        }
+      }
+      break;
+    case "c#":
+      compiler = "mcs";
+      if (!checkCommandAvailability(compiler)) {
+        console.warn(`Compiler ${compiler} not found.`);
+        if (process.platform === "linux") {
+          installCommand = ["sudo", "apt-get", "update"];
+          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
+          installCommand = ["sudo", "apt-get", "install", "-y", "mono-mcs"];
+        } else if (process.platform === "win32") {
+          if (!isElevatedWindows()) {
+            throw new Error("Automatic installation of Mono (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install Mono manually.");
+          }
+          installCommand = ["choco", "install", "mono", "-y"];
+        } else {
+          throw new Error(`Compiler ${compiler} is not installed and automatic installation is not supported on this platform.`);
+        }
+      }
+      break;
+  }
+
+  if (installCommand.length > 0) {
+    console.log(`Attempting to install ${compiler} using: ${installCommand.join(" ")}`);
+    const installProc = spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
+    if (installProc.status !== 0) {
+      throw new Error(`Failed to install ${compiler}`);
+    }
+    if (!checkCommandAvailability(compiler)) {
+      throw new Error(`${compiler} still not found after installation attempt.`);
+    }
+    console.log(`${compiler} installation successful.`);
+  }
+};
+/*
  * Executes compiled code by writing the source to a temporary file,
  * compiling it, and then running the resulting executable.
- *
- * @param sourceCode - The source code to compile.
- * @param sourceFileName - The file name to use (e.g. "Main.java", "main.c").
- * @param compileCmd - Array representing the compile command and its arguments.
- * @param execCmd - Array representing the run command and its arguments.
- * @param inputs - (Optional) Input to pass to the executable.
  */
 const executeCompiledCode = (
   sourceCode: string,
@@ -128,13 +239,10 @@ const executeCompiledCode = (
   inputs?: string
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
-    // Create a temporary directory.
     const tempDir = mkdtempSync(join(tmpdir(), "exec-"));
     const sourceFilePath = join(tempDir, sourceFileName);
-    // Write the source code to file.
     writeFileSync(sourceFilePath, sourceCode);
 
-    // Compile the source code.
     const compileProcess = spawn(compileCmd[0], compileCmd.slice(1), { cwd: tempDir, stdio: "pipe" });
     let compileError = "";
     compileProcess.stderr.on("data", (data) => {
@@ -145,9 +253,7 @@ const executeCompiledCode = (
         rmSync(tempDir, { recursive: true, force: true });
         return reject("Compilation error: " + compileError);
       }
-      // Compilation succeeded; now run the executable.
       let executable = execCmd[0];
-      // If the command starts with "./", resolve it to an absolute path.
       if (executable.startsWith("./")) {
         executable = join(tempDir, executable.slice(2));
       }
@@ -157,49 +263,47 @@ const executeCompiledCode = (
       const timeout = setTimeout(() => {
         runProcess.kill();
       }, 3000);
-      runProcess.stdout.on("data", (data) => {
-        output += data.toString();
-      });
-      runProcess.stderr.on("data", (data) => {
-        runError += data.toString();
-      });
+      runProcess.stdout.on("data", (data) => { output += data.toString(); });
+      runProcess.stderr.on("data", (data) => { runError += data.toString(); });
       runProcess.on("close", (exitCode) => {
         clearTimeout(timeout);
         rmSync(tempDir, { recursive: true, force: true });
-        if (exitCode === 0) {
-          resolve(output.trim());
-        } else {
-          reject(runError.trim());
-        }
+        exitCode === 0 ? resolve(output.trim()) : reject(runError.trim());
       });
-      if (inputs) {
-        runProcess.stdin.write(inputs + "\n");
-      }
+      if (inputs) { runProcess.stdin.write(inputs + "\n"); }
       runProcess.stdin.end();
     });
   });
 };
 
 /**
- * Executes the given code after ensuring dependencies are installed.
+ * Executes the given code after ensuring dependencies and compilers are installed.
  * Supports Python, JavaScript, Bash, Java, C, C++, and C#.
  */
 export const executeCode = async (code: string, language: string, inputs?: string): Promise<string> => {
-  // Check for malicious code patterns first.
+  // Check for malicious code patterns.
   for (const pattern of restrictedPatterns) {
     if (pattern.test(code)) {
       throw new Error("Malicious code detected");
     }
   }
 
-  // Automatically install dependencies (or warn) as needed.
+  // For interpreted languages, install dependencies if needed.
   await ensureDependencies(code, language);
 
-  // Normalize language input to handle case and common aliases.
+  // Normalize language input.
   const lang = language.toLowerCase().trim();
 
+  // For compiled languages, check and install the compiler if needed.
+  if (["java", "c", "c++", "cpp", "c#", "csharp"].includes(lang)) {
+    let canonicalLang = lang;
+    if (lang === "cpp") canonicalLang = "c++";
+    if (lang === "csharp") canonicalLang = "c#";
+    await checkAndInstallCompiler(canonicalLang);
+  }
+
   if (lang === "python") {
-    const command = [global.process.platform === "win32" ? "python" : "python3", "-c", code];
+    const command = [process.platform === "win32" ? "python" : "python3", "-c", code];
     return new Promise<string>((resolve, reject) => {
       const proc = spawn(command[0], command.slice(1), { stdio: ["pipe", "pipe", "pipe"] });
       let output = "";
@@ -208,8 +312,8 @@ export const executeCode = async (code: string, language: string, inputs?: strin
         proc.kill();
         console.error("Execution time exceeded the limit of 3 seconds");
       }, 3000);
-      proc.stdout.on("data", (data) => output += data.toString());
-      proc.stderr.on("data", (data) => error += data.toString());
+      proc.stdout.on("data", (data) => { output += data.toString(); });
+      proc.stderr.on("data", (data) => { error += data.toString(); });
       proc.on("close", (exitCode) => {
         clearTimeout(timeout);
         exitCode === 0 ? resolve(output.trim()) : reject(error.trim());
@@ -227,8 +331,8 @@ export const executeCode = async (code: string, language: string, inputs?: strin
         proc.kill();
         console.error("Execution time exceeded the limit of 3 seconds");
       }, 3000);
-      proc.stdout.on("data", (data) => output += data.toString());
-      proc.stderr.on("data", (data) => error += data.toString());
+      proc.stdout.on("data", (data) => { output += data.toString(); });
+      proc.stderr.on("data", (data) => { error += data.toString(); });
       proc.on("close", (exitCode) => {
         clearTimeout(timeout);
         exitCode === 0 ? resolve(output.trim()) : reject(error.trim());
@@ -246,8 +350,8 @@ export const executeCode = async (code: string, language: string, inputs?: strin
         proc.kill();
         console.error("Execution time exceeded the limit of 3 seconds");
       }, 3000);
-      proc.stdout.on("data", (data) => output += data.toString());
-      proc.stderr.on("data", (data) => error += data.toString());
+      proc.stdout.on("data", (data) => { output += data.toString(); });
+      proc.stderr.on("data", (data) => { error += data.toString(); });
       proc.on("close", (exitCode) => {
         clearTimeout(timeout);
         exitCode === 0 ? resolve(output.trim()) : reject(error.trim());
@@ -256,9 +360,7 @@ export const executeCode = async (code: string, language: string, inputs?: strin
       proc.stdin.end();
     });
   }
-  // Compiled languages.
   else if (lang === "java") {
-    // Assumes the Java code contains a public class named "Main" with a main method.
     return await executeCompiledCode(code, "Main.java", ["javac", "Main.java"], ["java", "Main"], inputs);
   } else if (lang === "c") {
     return await executeCompiledCode(code, "main.c", ["gcc", "main.c", "-o", "main"], ["./main"], inputs);
@@ -281,11 +383,9 @@ type MyHandler = Handler<{
 
 export const executeRouteHandler: MyHandler = async ({ body }: { body: { code: string; language: string; inputs?: string } }) => {
   const { code, language, inputs } = body;
-
   if (!code || !language) {
     return { error: "Code and language are required", status: 400 };
   }
-
   try {
     const result = await executeCode(code, language, inputs);
     return { result, status: 200 };
