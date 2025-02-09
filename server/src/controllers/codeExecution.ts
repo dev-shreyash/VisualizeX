@@ -4,6 +4,7 @@ import { writeFileSync, rmSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
+// Restricted patterns to avoid dangerous code.
 const restrictedPatterns = [
   /rm\s+-rf/, /sudo/, /chmod\s+[0-7]{3,4}/, /chown/, /dd\s+if=/, /mkfs/,
   /shutdown/, /reboot/, /kill\s+-9/, /wget\s+http/, /curl\s+http/, /iptables/,
@@ -39,10 +40,9 @@ const ensureDependencies = async (code: string, language: string): Promise<void>
     const importMatches = [...code.matchAll(/^import\s+([\w\d_]+)/gm)];
     const fromMatches = [...code.matchAll(/^from\s+([\w\d_]+)\s+import/gm)];
     const libraries = Array.from(new Set([
-      ...importMatches.map((m) => m[1]),
-      ...fromMatches.map((m) => m[1])
+      ...importMatches.map(m => m[1]),
+      ...fromMatches.map(m => m[1])
     ]));
-
     for (const lib of libraries) {
       const isInstalled = await new Promise<boolean>((resolve) => {
         const checkCmd = spawn("python3", ["-c", `import ${lib}`]);
@@ -62,10 +62,9 @@ const ensureDependencies = async (code: string, language: string): Promise<void>
     const requireMatches = [...code.matchAll(/require\(['"`]([\w\d-_]+)['"`]\)/gm)];
     const importMatches = [...code.matchAll(/import\s+[\w{}*]+\s+from\s+['"`]([\w\d-_]+)['"`]/gm)];
     const libraries = Array.from(new Set([
-      ...requireMatches.map((m) => m[1]),
-      ...importMatches.map((m) => m[1])
+      ...requireMatches.map(m => m[1]),
+      ...importMatches.map(m => m[1])
     ]));
-
     for (const lib of libraries) {
       const isInstalled = await new Promise<boolean>((resolve) => {
         const checkCmd = spawn("npm", ["list", lib]);
@@ -122,9 +121,8 @@ const ensureDependencies = async (code: string, language: string): Promise<void>
 
 // Helper: Check if the current process is elevated on Windows.
 const isElevatedWindows = (): boolean => {
-  if (process.platform !== "win32") return true; // not Windows, so ignore.
+  if (process.platform !== "win32") return true;
   try {
-    // "net session" requires admin rights. If it fails, we are not elevated.
     const result = spawnSync("net", ["session"], { stdio: "ignore" });
     return result.status === 0;
   } catch (err) {
@@ -134,24 +132,43 @@ const isElevatedWindows = (): boolean => {
 
 /**
  * Attempts to check for and install the required compiler if it is not installed.
- * On Windows, if not running in an elevated shell, it throws an error instructing the user.
+ * On Linux, it checks if the process is running as root; if not, it checks if "sudo" is available.
+ * On Windows, it requires an elevated shell.
  */
 const checkAndInstallCompiler = async (language: string): Promise<void> => {
   let compiler = "";
   let installCommand: string[] = [];
   
+  // Helper function for Linux command execution.
+  const runLinuxCommand = (commandArr: string[]): number => {
+    const result = spawnSync(commandArr[0], commandArr.slice(1), { stdio: "inherit" });
+    if (result.status === null) {
+      throw new Error("Error executing command");
+    }
+    return result.status;
+  };
+
+  // Determine the compiler and installation command based on the language.
   switch (language) {
     case "java":
       compiler = "javac";
       if (!checkCommandAvailability(compiler)) {
         console.warn(`Compiler ${compiler} not found.`);
         if (process.platform === "linux") {
-          installCommand = ["sudo", "apt-get", "update"];
-          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
-          installCommand = ["sudo", "apt-get", "install", "-y", "default-jdk"];
+          const isRoot = typeof process.getuid === "function" && process.getuid() === 0;
+          const updateCmd = isRoot
+            ? ["apt-get", "update"]
+            : (checkCommandAvailability("sudo") ? ["sudo", "apt-get", "update"] : null);
+          if (!updateCmd) {
+            throw new Error("Not running as root and 'sudo' is not available. Please install Java manually.");
+          }
+          runLinuxCommand(updateCmd);
+          installCommand = isRoot
+            ? ["apt-get", "install", "-y", "default-jdk"]
+            : ["sudo", "apt-get", "install", "-y", "default-jdk"];
         } else if (process.platform === "win32") {
           if (!isElevatedWindows()) {
-            throw new Error("Automatic installation of Java (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install Java manually.");
+            throw new Error("Automatic installation of Java (via Chocolatey) requires an elevated shell. Please run as Administrator or install Java manually.");
           }
           installCommand = ["choco", "install", "jdk8", "-y"];
         } else {
@@ -164,12 +181,20 @@ const checkAndInstallCompiler = async (language: string): Promise<void> => {
       if (!checkCommandAvailability(compiler)) {
         console.warn(`Compiler ${compiler} not found.`);
         if (process.platform === "linux") {
-          installCommand = ["sudo", "apt-get", "update"];
-          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
-          installCommand = ["sudo", "apt-get", "install", "-y", "build-essential"];
+          const isRoot = typeof process.getuid === "function" && process.getuid() === 0;
+          const updateCmd = isRoot
+            ? ["apt-get", "update"]
+            : (checkCommandAvailability("sudo") ? ["sudo", "apt-get", "update"] : null);
+          if (!updateCmd) {
+            throw new Error("Not running as root and 'sudo' is not available. Please install GCC manually.");
+          }
+          runLinuxCommand(updateCmd);
+          installCommand = isRoot
+            ? ["apt-get", "install", "-y", "build-essential"]
+            : ["sudo", "apt-get", "install", "-y", "build-essential"];
         } else if (process.platform === "win32") {
           if (!isElevatedWindows()) {
-            throw new Error("Automatic installation of GCC (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install GCC manually.");
+            throw new Error("Automatic installation of GCC (via Chocolatey) requires an elevated shell. Please run as Administrator or install GCC manually.");
           }
           installCommand = ["choco", "install", "mingw", "-y"];
         } else {
@@ -182,12 +207,20 @@ const checkAndInstallCompiler = async (language: string): Promise<void> => {
       if (!checkCommandAvailability(compiler)) {
         console.warn(`Compiler ${compiler} not found.`);
         if (process.platform === "linux") {
-          installCommand = ["sudo", "apt-get", "update"];
-          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
-          installCommand = ["sudo", "apt-get", "install", "-y", "build-essential"];
+          const isRoot = typeof process.getuid === "function" && process.getuid() === 0;
+          const updateCmd = isRoot
+            ? ["apt-get", "update"]
+            : (checkCommandAvailability("sudo") ? ["sudo", "apt-get", "update"] : null);
+          if (!updateCmd) {
+            throw new Error("Not running as root and 'sudo' is not available. Please install G++ manually.");
+          }
+          runLinuxCommand(updateCmd);
+          installCommand = isRoot
+            ? ["apt-get", "install", "-y", "build-essential"]
+            : ["sudo", "apt-get", "install", "-y", "build-essential"];
         } else if (process.platform === "win32") {
           if (!isElevatedWindows()) {
-            throw new Error("Automatic installation of G++ (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install G++ manually.");
+            throw new Error("Automatic installation of G++ (via Chocolatey) requires an elevated shell. Please run as Administrator or install G++ manually.");
           }
           installCommand = ["choco", "install", "mingw", "-y"];
         } else {
@@ -200,12 +233,20 @@ const checkAndInstallCompiler = async (language: string): Promise<void> => {
       if (!checkCommandAvailability(compiler)) {
         console.warn(`Compiler ${compiler} not found.`);
         if (process.platform === "linux") {
-          installCommand = ["sudo", "apt-get", "update"];
-          spawnSync(installCommand[0], installCommand.slice(1), { stdio: "inherit" });
-          installCommand = ["sudo", "apt-get", "install", "-y", "mono-mcs"];
+          const isRoot = typeof process.getuid === "function" && process.getuid() === 0;
+          const updateCmd = isRoot
+            ? ["apt-get", "update"]
+            : (checkCommandAvailability("sudo") ? ["sudo", "apt-get", "update"] : null);
+          if (!updateCmd) {
+            throw new Error("Not running as root and 'sudo' is not available. Please install Mono manually.");
+          }
+          runLinuxCommand(updateCmd);
+          installCommand = isRoot
+            ? ["apt-get", "install", "-y", "mono-mcs"]
+            : ["sudo", "apt-get", "install", "-y", "mono-mcs"];
         } else if (process.platform === "win32") {
           if (!isElevatedWindows()) {
-            throw new Error("Automatic installation of Mono (via Chocolatey) requires an elevated shell. Please run the server as Administrator or install Mono manually.");
+            throw new Error("Automatic installation of Mono (via Chocolatey) requires an elevated shell. Please run as Administrator or install Mono manually.");
           }
           installCommand = ["choco", "install", "mono", "-y"];
         } else {
@@ -227,7 +268,8 @@ const checkAndInstallCompiler = async (language: string): Promise<void> => {
     console.log(`${compiler} installation successful.`);
   }
 };
-/*
+
+/**
  * Executes compiled code by writing the source to a temporary file,
  * compiling it, and then running the resulting executable.
  */
@@ -359,8 +401,7 @@ export const executeCode = async (code: string, language: string, inputs?: strin
       if (inputs) proc.stdin.write(inputs + "\n");
       proc.stdin.end();
     });
-  }
-  else if (lang === "java") {
+  } else if (lang === "java") {
     return await executeCompiledCode(code, "Main.java", ["javac", "Main.java"], ["java", "Main"], inputs);
   } else if (lang === "c") {
     return await executeCompiledCode(code, "main.c", ["gcc", "main.c", "-o", "main"], ["./main"], inputs);
