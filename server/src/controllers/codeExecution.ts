@@ -26,7 +26,6 @@ const restrictedPatterns = [
  */
 const ensureDependencies = async (code: string, language: string) => {
   if (language === "python") {
-    // Extract library names from "import" and "from" statements.
     const importMatches = [...code.matchAll(/^import\s+([\w\d_]+)/gm)];
     const fromMatches = [...code.matchAll(/^from\s+([\w\d_]+)\s+import/gm)];
     const libraries = Array.from(new Set([
@@ -51,7 +50,6 @@ const ensureDependencies = async (code: string, language: string) => {
       }
     }
   } else if (language === "javascript") {
-    // Extract libraries using require and ES6 import syntax.
     const requireMatches = [...code.matchAll(/require\(['"`]([\w\d-_]+)['"`]\)/gm)];
     const importMatches = [...code.matchAll(/import\s+[\w{}*]+\s+from\s+['"`]([\w\d-_]+)['"`]/gm)];
     const libraries = Array.from(new Set([
@@ -75,20 +73,15 @@ const ensureDependencies = async (code: string, language: string) => {
         });
       }
     }
-  }
-  // For Java, check for non-standard imports.
-  else if (language === "java") {
+  } else if (language === "java") {
     const importMatches = [...code.matchAll(/^import\s+([\w.]+);/gm)];
     const libraries = Array.from(new Set(importMatches.map(m => m[1])));
     libraries.forEach(lib => {
-      // Standard libraries start with java. or javax.
       if (!lib.startsWith("java.") && !lib.startsWith("javax.")) {
         console.warn(`Warning: Detected non-standard Java dependency: ${lib}. Automatic installation is not supported.`);
       }
     });
-  }
-  // For C, check for non-standard includes.
-  else if (language === "c") {
+  } else if (language === "c") {
     const includeMatches = [...code.matchAll(/^#include\s+<([^>]+)>/gm)];
     const libraries = Array.from(new Set(includeMatches.map(m => m[1])));
     const standardHeaders = ["stdio.h", "stdlib.h", "string.h", "math.h", "stdbool.h", "limits.h", "ctype.h", "errno.h"];
@@ -97,9 +90,7 @@ const ensureDependencies = async (code: string, language: string) => {
         console.warn(`Warning: Detected non-standard C dependency: ${lib}. Automatic installation is not supported.`);
       }
     });
-  }
-  // For C++, check for non-standard includes.
-  else if (language === "c++") {
+  } else if (language === "c++") {
     const includeMatches = [...code.matchAll(/^#include\s+<([^>]+)>/gm)];
     const libraries = Array.from(new Set(includeMatches.map(m => m[1])));
     const standardHeaders = ["iostream", "vector", "string", "map", "set", "algorithm", "cmath", "cstdlib", "cstdio", "cstring"];
@@ -108,13 +99,10 @@ const ensureDependencies = async (code: string, language: string) => {
         console.warn(`Warning: Detected non-standard C++ dependency: ${lib}. Automatic installation is not supported.`);
       }
     });
-  }
-  // For C#, check for non-standard using statements.
-  else if (language === "c#") {
+  } else if (language === "c#") {
     const usingMatches = [...code.matchAll(/^using\s+([\w.]+);/gm)];
     const libraries = Array.from(new Set(usingMatches.map(m => m[1])));
     libraries.forEach(lib => {
-      // Assume that standard libraries start with System.
       if (!lib.startsWith("System")) {
         console.warn(`Warning: Detected non-standard C# dependency: ${lib}. Automatic installation is not supported.`);
       }
@@ -158,7 +146,12 @@ const executeCompiledCode = (
         return reject("Compilation error: " + compileError);
       }
       // Compilation succeeded; now run the executable.
-      const runProcess = spawn(execCmd[0], execCmd.slice(1), { cwd: tempDir, stdio: ["pipe", "pipe", "pipe"] });
+      let executable = execCmd[0];
+      // If the command starts with "./", resolve it to an absolute path.
+      if (executable.startsWith("./")) {
+        executable = join(tempDir, executable.slice(2));
+      }
+      const runProcess = spawn(executable, execCmd.slice(1), { cwd: tempDir, stdio: ["pipe", "pipe", "pipe"] });
       let output = "";
       let runError = "";
       const timeout = setTimeout(() => {
@@ -205,7 +198,6 @@ export const executeCode = async (code: string, language: string, inputs?: strin
   // Normalize language input to handle case and common aliases.
   const lang = language.toLowerCase().trim();
 
-  // Interpreted languages.
   if (lang === "python") {
     const command = [global.process.platform === "win32" ? "python" : "python3", "-c", code];
     return new Promise<string>((resolve, reject) => {
@@ -273,7 +265,6 @@ export const executeCode = async (code: string, language: string, inputs?: strin
   } else if (lang === "c++" || lang === "cpp") {
     return await executeCompiledCode(code, "main.cpp", ["g++", "main.cpp", "-o", "main"], ["./main"], inputs);
   } else if (lang === "c#" || lang === "csharp") {
-    // Assumes usage of the Mono C# compiler (mcs) and runtime (mono).
     return await executeCompiledCode(code, "Program.cs", ["mcs", "Program.cs"], ["mono", "Program.exe"], inputs);
   } else {
     throw new Error("Unsupported language");
@@ -288,9 +279,6 @@ type MyHandler = Handler<{
   };
 }>;
 
-/**
- * HTTP route handler that executes code and returns the output.
- */
 export const executeRouteHandler: MyHandler = async ({ body }: { body: { code: string; language: string; inputs?: string } }) => {
   const { code, language, inputs } = body;
 
