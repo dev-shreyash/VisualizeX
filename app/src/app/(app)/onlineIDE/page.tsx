@@ -37,17 +37,48 @@ function OnlineIDE() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
 
-
   const tabs = [
-    { id: "1", label: "Python", key: "python",image: "/images/python.svg", extension: ".py" },
-    { id: "2", label: "Java", key: "java", image: "/images/java.svg", extension: ".java" },
+    {
+      id: "1",
+      label: "Python",
+      key: "python",
+      image: "/images/python.svg",
+      extension: ".py",
+    },
+    {
+      id: "2",
+      label: "Java",
+      key: "java",
+      image: "/images/java.svg",
+      extension: ".java",
+    },
     { id: "3", label: "C", key: "c", image: "/images/c.svg", extension: ".c" },
-    { id: "4", label: "C++", key: "cpp", image: "/images/cpp.svg", extension: ".cpp" },
-    { id: "5", label: "C#", key: "csharp", image: "/images/csharp.svg", extension: ".cs" },
-    { id: "6", label: "JavaScript", key: "javascript", image: "/images/javascript.svg", extension: ".js" },
+    {
+      id: "4",
+      label: "C++",
+      key: "cpp",
+      image: "/images/cpp.svg",
+      extension: ".cpp",
+    },
+    {
+      id: "5",
+      label: "C#",
+      key: "csharp",
+      image: "/images/csharp.svg",
+      extension: ".cs",
+    },
+    {
+      id: "6",
+      label: "JavaScript",
+      key: "javascript",
+      image: "/images/javascript.svg",
+      extension: ".js",
+    },
   ];
   // State to store the window width
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 0);
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 0
+  );
 
   // Use useEffect to listen to window resizing
   useEffect(() => {
@@ -208,7 +239,6 @@ function OnlineIDE() {
       if (response.data && response.data.status === 200) {
         // Properly append the result to the terminal history
         setTerminalHistory((prev) => [...prev, ` ${response.data.result}`]);
-        
       } else {
         setTerminalHistory((prev) => [
           ...prev,
@@ -259,12 +289,10 @@ function OnlineIDE() {
     }
   };
 
-
   //handle lear terminal
   const clearTerminal = () => {
     setTerminalHistory([]);
-  }
-
+  };
 
   //handel full screen
 
@@ -278,8 +306,11 @@ function OnlineIDE() {
     }
   };
   return (
-    <div className="flex min-h-screen bg-gray-900 p-4 w-full">
-      <div className="flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"  ref={divRef}>
+    <div className="flex min-h-screen bg-gray-900 lg:p-4 w-full">
+      <div
+        className="flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"
+        ref={divRef}
+      >
         {/* <div className="flex flex-col sm:flex-row justify-between items-center sm:px-2 sm:py-2">
         
 
@@ -287,152 +318,200 @@ function OnlineIDE() {
 
         </div> */}
 
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:px-4 ">
-          <div className="flex w-[50%] items-center justify-between">
-          
-            <div className="flex items-center justify-center "> 
-                {/* Tabs */}
-          <div className="flex space-x-2 w-full sm:w-auto sm:flex-1 p-2 m-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedTab(tab.id)}
-                className={`flex items-center justify-center rounded-3xl p-3 m-0 w-[50px] h-[50px] sm:w-auto shadow-gray-800 shadow-md ${
-                  selectedTab === tab.id
-                    ? "bg-gray-200 text-white"
-                    : "bg-gray-600 text-gray-700"
-                }`}
-              >
-                   <Image src={tab.image} alt={tab.label} width={30} height={30} className="" />
-                                
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-col sm:flex-row justify-between lg:items-center sm:px-4 ">
+          <div className="lg:flex lg:w-[50%] items-center justify-between">
+            <div className="flex items-center justify-center ">
+              {/* Tabs */}
+              <div className="flex justify-around lg:justify-start space-x-2 w-full sm:w-auto sm:flex-1 p-2 m-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedTab(tab.id)}
+                    className={`flex items-center justify-center rounded-3xl p-3 m-0 w-[50px] h-[50px] sm:w-auto shadow-gray-800 shadow-md ${
+                      selectedTab === tab.id
+                        ? "bg-gray-200 text-white"
+                        : "bg-gray-600 text-gray-700"
+                    }`}
+                  >
+                    <Image
+                      src={tab.image}
+                      alt={tab.label}
+                      width={30}
+                      height={30}
+                      className=""
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Run Button */}
-           <Button onClick={handleRunCode} className="flex items-center bg-slate-200 text-black font-bold  hover:bg-slate-300 hover:border-lime-400  rounded-lg">
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : (
-              <div className="flex items-center gap-2 text-xl">
-              Run 
-              <Image
-                src={"/images/settings.svg"}
-                alt="run"
-                width={30}
-                height={30}
-                className="rounded-full cursor-pointer"
-              />
-              
+            <div className="flex items-center justify-between px-2 lg:p-0">
+            <Button
+              onClick={handleRunCode}
+              className="flex items-center bg-slate-200 text-black font-bold  hover:bg-slate-300 hover:border-lime-400  mx-2  rounded-lg"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </>
+              ) : (
+                <div className="flex items-center gap-2 text-xl">
+                  Run
+                  <Image
+                    src={"/images/settings.svg"}
+                    alt="run"
+                    width={30}
+                    height={30}
+                    className="rounded-full cursor-pointer"
+                  />
+                </div>
+              )}
+            </Button>
+            <div className=" lg:hidden flex space-x-2 justify-end px-2">
+            <div className="relative group">
+              <button
+                onClick={handleSubmitCode}
+                className="p-2 flex items-center bg-slate-200 rounded-lg"
+              >
+                <Image
+                  src={"/images/save.svg"}
+                  alt="save"
+                  width={30}
+                  height={30}
+                  className="rounded-full cursor-pointer text-white "
+                />{" "}
+                Save code
+              </button>
+              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
+                Save code
               </div>
-            )}
-          </Button>
-          </div>
-           <div className="flex space-x-2">
-           <div className="relative group">
-            <button onClick={handleSubmitCode} className="p-2 flex items-center bg-slate-200 rounded-lg">
-              <Image
-                src={"/images/save.svg"}
-                alt="save"
-                width={30}
-                height={30}
-                className="rounded-full cursor-pointer text-white "
-              /> Save code
-            </button>
-            <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
-              Save code
+            </div>
+            <div className="relative group">
+              <div
+                className="flex bg-slate-200 p-2 items-center gap-2 text-xl rounded-md"
+                onClick={handleFullScreen}
+              >
+                <Image
+                  src={"/images/full-screen.svg"}
+                  alt="Full screen"
+                  width={30}
+                  height={30}
+                  className=" cursor-pointer"
+                />
+              </div>
+              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
+                Full Screen
+              </div>
             </div>
           </div>
-          <div className="relative group">
-          <div className="flex bg-slate-200 p-2 items-center gap-2 text-xl rounded-md" onClick={handleFullScreen}>
-            <Image
-              src={"/images/full-screen.svg"}
-              alt="Full screen"
-              width={30}
-              height={30}
-              className=" cursor-pointer"
-              /> 
-          </div>
-          <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
-              Full Screen
             </div>
-          </div>
-           </div>
           
+          </div>
+          <div className="hidden lg:flex space-x-2 justify-end px-2">
+            <div className="relative group">
+              <button
+                onClick={handleSubmitCode}
+                className="p-2 flex items-center bg-slate-200 rounded-lg"
+              >
+                <Image
+                  src={"/images/save.svg"}
+                  alt="save"
+                  width={30}
+                  height={30}
+                  className="rounded-full cursor-pointer text-white "
+                />{" "}
+                Save code
+              </button>
+              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
+                Save code
+              </div>
+            </div>
+            <div className="relative group">
+              <div
+                className="flex bg-slate-200 p-2 items-center gap-2 text-xl rounded-md"
+                onClick={handleFullScreen}
+              >
+                <Image
+                  src={"/images/full-screen.svg"}
+                  alt="Full screen"
+                  width={30}
+                  height={30}
+                  className=" cursor-pointer"
+                />
+              </div>
+              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
+                Full Screen
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col p-3 sm:flex-row  gap-4 sm:gap-8">
-        {/* Editor for all screen sizes with different heights for sm and lg */}
-       
-        
-        <div className="w-full max-w-4xl mx-auto shadow-md">
-        <div className="flex text-white bg-[#1e1e1e] w-full py-2 px-5">
-          main{tabs.find((tab) => tab.id === selectedTab)?.extension }
-        </div>
-      <Editor
-        height={editorHeight} // Dynamically set the height based on screen size
-        defaultLanguage={
-          tabs.find((tab) => tab.id === selectedTab)?.key || "javascript"
-        }
-        value={
-          editorContent[
-            tabs.find((tab) => tab.id === selectedTab)?.key || ""
-          ]
-        }
-        onChange={(value) =>
-          setEditorContent((prev) => ({
-            ...prev,
-            [tabs.find((tab) => tab.id === selectedTab)?.key || ""]: value || "",
-          }))
-        }
-        theme="vs-dark"
-        options={{
-          minimap: { enabled: false },
-          wordWrap: "on",
-          wordWrapColumn: 80,
-        }}
-      />
-    </div>
+          {/* Editor for all screen sizes with different heights for sm and lg */}
 
-
-
-          {/* Terminal */}
-          <div className="flex flex-col w-full max-w-4xl mx-auto">
-            
-          
-          <div className="flex justify-between items-center text-white bg-[#1e1e1e] w-full p-2" onClick={clearTerminal}>
-           <div className="flex">Output</div>
-           <button className="border border-gray-300 rounded-md p-2 ">
-            Clear
-           </button>
-        </div>
-          <div className="w-full  max-w-4xl mx-auto p-4 bg-gray-800 text-gray-300 border-black border-gray-300 h-[90vh] overflow-auto">
-          
-            <pre>&gt;&gt;</pre>
-            <div className="terminal-output mb-4">
-              
-              {terminalHistory.map((line, index) => (
-                <pre key={index} className="text-gray-300">
-                  {line}
-                </pre>
-              ))}
+          <div className="w-full max-w-4xl mx-auto shadow-md">
+            <div className="flex text-white bg-[#1e1e1e] w-full py-4 px-5">
+              main{tabs.find((tab) => tab.id === selectedTab)?.extension}
             </div>
-            <input
-              type="text"
-              value={stdin}
-              onKeyDown={handleKeyPress}
-              onChange={(e) => setStdin(e.target.value)}
-              className="w-full p-2 font-terminal bg-inherit focus:outline-none"
-              autoFocus
+            <Editor
+              height={editorHeight} // Dynamically set the height based on screen size
+              defaultLanguage={
+                tabs.find((tab) => tab.id === selectedTab)?.key || "javascript"
+              }
+              value={
+                editorContent[
+                  tabs.find((tab) => tab.id === selectedTab)?.key || ""
+                ]
+              }
+              onChange={(value) =>
+                setEditorContent((prev) => ({
+                  ...prev,
+                  [tabs.find((tab) => tab.id === selectedTab)?.key || ""]:
+                    value || "",
+                }))
+              }
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: false },
+                wordWrap: "on",
+                wordWrapColumn: 80,
+              }}
             />
           </div>
+
+          {/* Terminal */}
+          <div className="flex flex-col h-[40vh] lg:h-screen w-full max-w-4xl  mx-auto">
+            <div
+              className="flex justify-between items-center text-white bg-[#1e1e1e] w-full p-2"
+              onClick={clearTerminal}
+            >
+              <div className="flex">Output</div>
+              <button className="border border-gray-300 rounded-md p-2 ">
+                Clear
+              </button>
+            </div>
+            <div className="w-full  max-w-4xl mx-auto p-4 bg-gray-800 text-gray-300 border-black border-gray-300 h-[90vh] overflow-auto">
+              <pre>&gt;&gt;</pre>
+              <div className="terminal-output mb-4">
+                {terminalHistory.map((line, index) => (
+                  <pre key={index} className="text-gray-300">
+                    {line}
+                  </pre>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={stdin}
+                onKeyDown={handleKeyPress}
+                onChange={(e) => setStdin(e.target.value)}
+                className="w-full p-2 font-terminal bg-inherit focus:outline-none"
+                autoFocus
+              />
+            </div>
           </div>
         </div>
-        
       </div>
     </div>
   );

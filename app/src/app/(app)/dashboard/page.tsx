@@ -148,7 +148,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="flex justify-center mx-5 items-center min-h-screen bg-[#e0e0e0]">
+    <div className="flex justify-center  items-center min-h-screen w-full bg-gray-100">
       <div className="w-full max-w-lg p-8 rounded-lg shadow-lg bg-white">
         <h1 className="text-3xl font-bold text-center mb-6">User Dashboard</h1>
         <div className="mb-6 text-center">

@@ -37,17 +37,17 @@ export default function Home() {
         }}
         className="relative overflow-scroll flex flex-col gap-4 items-center justify-center px-4 h-[100%] pt-4 scroll-smooth no-scrollbar "
       >
-        <div className="home-container h-full bg-none no-scrollbar lg:max-w-[90%]">
+        <div className="home-container h-full bg-none no-scrollbar lg:max-w-[90%] scroll-smooth">
           <div className="home-text-section">
             <div className="flex flex-col items-center justify-center text-center">
-              <BackgroundLines className="flex items-center justify-center w-full  flex-col px-4 bg-none scroll-smooth">
-                <h1 className=" font-bold text-black text-sm sm:text-sm md:text-sm lg:text-xl font-extralight leading-tight">
+              <BackgroundLines className=" flex items-center h-full lg:justify-center w-screen  flex-col px-4 bg-none scroll-smooth">
+                <h1 className=" font-bold text-black text-sm sm:text-sm md:text-sm lg:text-xl  leading-tight">
                   Unleash Your Algorithmic Potential with <br />
                 </h1>
-                <span className="text-2xl md:text-3xl lg:text-9xl ">
+                <span className="text-5xl font-bold md:text-3xl lg:text-9xl ">
                   VisualizeX
                 </span>
-                <p className="text-lg sm:text-xl md:text-2xl text-gray-400 mt-4 leading-relaxed">
+                <p className="text-sm sm:text-xl md:text-2xl text-gray-600 mt-4 leading-relaxed">
                   Welcome to VisualizeX, the ultimate platform for learning and
                   developing algorithms.With our <br />
                   integrated algorithm visualizer and online IDE, you can
@@ -80,9 +80,9 @@ export default function Home() {
           <div className="about-text-section flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-10 gap-8">
             <div className="flex flex-col w-full md:w-1/2 text-left items-start">
               <h1 className="font-bold text-black text-3xl sm:text-4xl md:text-5xl leading-tight">
-                Experience the Power of <br />
+                Experience the Power of 
                 Algorithm Visualization
-                <br />
+               
                 and Online Coding
               </h1>
             </div>

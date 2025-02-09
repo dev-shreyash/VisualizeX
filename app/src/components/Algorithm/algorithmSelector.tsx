@@ -68,13 +68,13 @@ export default function AlgorithmSelector({
     algo.name.toLowerCase().includes(searchQuery)
   );
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSearchQuery(e.currentTarget.value.toLowerCase());
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSearchQuery(event.currentTarget.value.toLowerCase());
   };
 
   return (
-    <div className="p-6 w-full ">
+    <div className="p-0 md:p-4 lg:p-6 w-full ">
       <h1 className="text-2xl text-gray-700 font-bold text-center mb-6">Select an Algorithm</h1>
 
       {/* Search Bar */}
