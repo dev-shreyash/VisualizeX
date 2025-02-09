@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
 import { useSessionData } from "@/app/hooks/useSessionData";
@@ -10,10 +10,13 @@ import { set } from "zod";
 import Image from "next/image";
 import { saveCode } from "@/helper/saveCode";
 import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
+import { image } from "d3";
 
 function OnlineIDE() {
   const { session, status } = useSessionData();
   const router = useRouter();
+  const divRef = useRef<HTMLDivElement>(null);
 
   const [userStatus, setUserStatus] = useState(false);
   const [selectedTab, setSelectedTab] = useState("1");
@@ -30,11 +33,18 @@ function OnlineIDE() {
   const [username, setUserName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
 
+
   const tabs = [
-    { id: "1", label: "Python", key: "python" },
-    { id: "6", label: "JavaScript", key: "javascript" },
+    { id: "1", label: "Python", key: "python",image: "/images/python.svg", extension: ".py" },
+    { id: "2", label: "Java", key: "java", image: "/images/java.svg", extension: ".java" },
+    { id: "3", label: "C", key: "c", image: "/images/c.svg", extension: ".c" },
+    { id: "4", label: "C++", key: "cpp", image: "/images/cpp.svg", extension: ".cpp" },
+    { id: "5", label: "C#", key: "csharp", image: "/images/csharp.svg", extension: ".cs" },
+    { id: "6", label: "JavaScript", key: "javascript", image: "/images/javascript.svg", extension: ".js" },
   ];
   // State to store the window width
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 0);
@@ -137,6 +147,8 @@ function OnlineIDE() {
       console.log("Language:", language);
       console.log("Input:", stdin);
 
+      setIsSubmitting(true);
+
       const response = await axios.post(
         process.env.NEXT_PUBLIC_API_URL + "/execute",
         {
@@ -152,15 +164,18 @@ function OnlineIDE() {
       if (response.data && response.data.status === 200) {
         // Properly append the result to the terminal history
         setTerminalHistory((prev) => [...prev, `>>${response.data.result}`]);
+        setIsSubmitting(false);
       } else {
         setTerminalHistory((prev) => [
           ...prev,
           `Error: ${response.data.error}`,
         ]);
+        setIsSubmitting(false);
       }
     } catch (error: any) {
       console.log("Error:", error); // Log the error
       setTerminalHistory((prev) => [...prev, `Error: ${error.message}`]);
+      setIsSubmitting(false);
     }
   };
 
@@ -193,6 +208,7 @@ function OnlineIDE() {
       if (response.data && response.data.status === 200) {
         // Properly append the result to the terminal history
         setTerminalHistory((prev) => [...prev, ` ${response.data.result}`]);
+        
       } else {
         setTerminalHistory((prev) => [
           ...prev,
@@ -243,64 +259,120 @@ function OnlineIDE() {
     }
   };
 
+
+  //handle lear terminal
+  const clearTerminal = () => {
+    setTerminalHistory([]);
+  }
+
+
+  //handel full screen
+
+  const handleFullScreen = () => {
+    if (divRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        divRef.current.requestFullscreen();
+      }
+    }
+  };
   return (
-    <div className="flex min-h-screen bg-gray-100 p-4 w-full">
-      <div className="flex-col w-full border bg-slate-200 rounded-md shadow-md pb-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:px-2 sm:py-2">
-          {/* Tabs */}
-          <div className="flex space-x-4 w-full sm:w-auto sm:flex-1 p-2 m-2">
+    <div className="flex min-h-screen bg-gray-900 p-4 w-full">
+      <div className="flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"  ref={divRef}>
+        {/* <div className="flex flex-col sm:flex-row justify-between items-center sm:px-2 sm:py-2">
+        
+
+          <h1 className="text-sm sm:text-base">User: {session?.user.email}</h1>
+
+        </div> */}
+
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:px-4 ">
+          <div className="flex w-[50%] items-center justify-between">
+          
+            <div className="flex items-center justify-center "> 
+                {/* Tabs */}
+          <div className="flex space-x-2 w-full sm:w-auto sm:flex-1 p-2 m-2">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
-                className={`px-4 py-2 m-0 w-full sm:w-auto h-9 shadow-md ${
+                className={`flex items-center justify-center rounded-3xl p-3 m-0 w-[50px] h-[50px] sm:w-auto shadow-gray-800 shadow-md ${
                   selectedTab === tab.id
-                    ? "bg-gray-500 text-white"
-                    : "bg-gray-200 text-gray-700"
+                    ? "bg-gray-200 text-white"
+                    : "bg-gray-600 text-gray-700"
                 }`}
               >
-                {tab.label}
+                   <Image src={tab.image} alt={tab.label} width={30} height={30} className="" />
+                                
               </button>
             ))}
           </div>
-
-          <h1 className="text-sm sm:text-base">User: {session?.user.email}</h1>
-
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:px-4 sm:py-2">
-          <div className="flex w-[60%] justify-between">
-
-            <div className="flex w-3 sm:w-0 sm:hidden"></div>
+            </div>
 
             {/* Run Button */}
-           <Button
-            onClick={handleRunCode}
-            className="px-6 py-2 text-white font-semibold rounded-md shadow-md hover:bg-emerald-500 mt-4 sm:mt-0"
-          >
-            Run Code
+           <Button onClick={handleRunCode} className="flex items-center bg-slate-200 text-black font-bold  hover:bg-slate-300 hover:border-lime-400  rounded-lg">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </>
+            ) : (
+              <div className="flex items-center gap-2 text-xl">
+              Run 
+              <Image
+                src={"/images/settings.svg"}
+                alt="run"
+                width={30}
+                height={30}
+                className="rounded-full cursor-pointer"
+              />
+              
+              </div>
+            )}
           </Button>
           </div>
-           
-          <div className="relative group">
-            <button onClick={handleSubmitCode} className="p-2 flex items-center">
+           <div className="flex space-x-2">
+           <div className="relative group">
+            <button onClick={handleSubmitCode} className="p-2 flex items-center bg-slate-200 rounded-lg">
               <Image
                 src={"/images/save.svg"}
                 alt="save"
                 width={30}
                 height={30}
-                className="rounded-full cursor-pointer"
+                className="rounded-full cursor-pointer text-white "
               /> Save code
             </button>
             <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
               Save code
             </div>
           </div>
+          <div className="relative group">
+          <div className="flex bg-slate-200 p-2 items-center gap-2 text-xl rounded-md" onClick={handleFullScreen}>
+            <Image
+              src={"/images/full-screen.svg"}
+              alt="Full screen"
+              width={30}
+              height={30}
+              className=" cursor-pointer"
+              /> 
+          </div>
+          <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
+              Full Screen
+            </div>
+          </div>
+           </div>
+          
         </div>
 
-        <div className="flex flex-col p-3 sm:flex-row mt-4 gap-4 sm:gap-8">
+        <div className="flex flex-col p-3 sm:flex-row  gap-4 sm:gap-8">
         {/* Editor for all screen sizes with different heights for sm and lg */}
+       
+        
         <div className="w-full max-w-4xl mx-auto shadow-md">
+        <div className="flex text-white bg-[#1e1e1e] w-full py-2 px-5">
+          main{tabs.find((tab) => tab.id === selectedTab)?.extension }
+        </div>
       <Editor
         height={editorHeight} // Dynamically set the height based on screen size
         defaultLanguage={
@@ -329,9 +401,20 @@ function OnlineIDE() {
 
 
           {/* Terminal */}
-          <div className="w-full sm:w-1/2 max-w-4xl mx-auto p-4 bg-gray-800 text-gray-300 border border-gray-300 h-[90vh] overflow-auto">
+          <div className="flex flex-col w-full max-w-4xl mx-auto">
+            
+          
+          <div className="flex justify-between items-center text-white bg-[#1e1e1e] w-full p-2" onClick={clearTerminal}>
+           <div className="flex">Output</div>
+           <button className="border border-gray-300 rounded-md p-2 ">
+            Clear
+           </button>
+        </div>
+          <div className="w-full  max-w-4xl mx-auto p-4 bg-gray-800 text-gray-300 border-black border-gray-300 h-[90vh] overflow-auto">
+          
             <pre>&gt;&gt;</pre>
             <div className="terminal-output mb-4">
+              
               {terminalHistory.map((line, index) => (
                 <pre key={index} className="text-gray-300">
                   {line}
@@ -347,7 +430,9 @@ function OnlineIDE() {
               autoFocus
             />
           </div>
+          </div>
         </div>
+        
       </div>
     </div>
   );
