@@ -5,11 +5,13 @@ import "dotenv/config";
 import { getServerStatus } from "./helper/fetchStatus";
 import { codeRoutes } from "./routes/codeRoutes";
 import { connectDB } from "./database/db.setup";
+import { keepServerAlive } from "./helper/keepAlive";
 
 
 // Connect to MongoDB
 connectDB();
 
+keepServerAlive();
 
 const app = new Elysia()
   .use(cors({ origin: process.env.CLIENT_URL })) // Allow requests from your frontend URL

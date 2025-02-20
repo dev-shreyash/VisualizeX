@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { BackgroundLines } from "@/components/ui/backgroud-lines";
 import { date } from "zod";
+import { BackgroundBeams } from "@/components/ui/background-beams";
 
 export default function Home() {
   const router = useRouter();
@@ -26,32 +27,33 @@ export default function Home() {
   ];
 
   return (
-    <AuroraBackground>
-      <motion.div
-        initial={{ opacity: 0.0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{
-          delay: 0.3,
-          duration: 0.8,
-          ease: "easeInOut",
-        }}
-        className="relative overflow-scroll flex flex-col gap-4 items-center justify-center px-4 h-[100%] pt-4 scroll-smooth no-scrollbar "
-      >
-        <div className="home-container h-full bg-none no-scrollbar lg:max-w-[90%] scroll-smooth">
-          <div className="home-text-section">
-            <div className="flex flex-col items-center justify-center text-center">
-              <BackgroundLines className=" flex items-center h-full lg:justify-center w-screen  flex-col px-4 bg-none scroll-smooth">
-                <h1 className=" font-bold text-black text-sm sm:text-sm md:text-sm lg:text-xl  leading-tight">
+    // <AuroraBackground>
+    //   <motion.div
+    //     initial={{ opacity: 0.0, y: 40 }}
+    //     whileInView={{ opacity: 1, y: 0 }}
+    //     transition={{
+    //       delay: 0.3,
+    //       duration: 0.8,
+    //       ease: "easeInOut",
+    //     }}
+    //     className="relative overflow-scroll  flex flex-col gap-4 items-center justify-center px-4 h-[100%] pt-4 scroll-smooth no-scrollbar "
+    //   >
+    <>
+     <div className="home-container h-full bg-transparent bg-blend-overlay no-scrollbar lg:max-w-[90%] m-auto scroll-smooth">
+          <div className="home-text-section flex items-center justify-between w-full bg-transparent h-[100vh]">
+          <div className="flex flex-col text-start items-start justify-start p-4 bg-[rgba(0,0,0,0.5] backdrop-blur-sm rounded-3xl  shadow-lg backdrop:shadow-2xl">
+                    <h1 className=" font-bold text-gray-200 text-sm sm:text-sm md:text-sm lg:text-xl  leading-tight">
                   Unleash Your Algorithmic Potential with <br />
                 </h1>
-                <span className="text-5xl font-bold md:text-3xl lg:text-9xl ">
+                <span className="text-5xl text-white font-bold md:text-3xl lg:text-9xl ">
                   VisualizeX
                 </span>
-                <p className="text-sm sm:text-xl md:text-2xl text-gray-600 mt-4 leading-relaxed">
+                <p className="text-sm sm:text-xl px-3 text-wrap md:text-2xl text-gray-600 mt-4 leading-relaxed">
                   Welcome to VisualizeX, the ultimate platform for learning and
-                  developing algorithms.With our <br />
-                  integrated algorithm visualizer and online IDE, you can
-                  explore, experiment, and master the <br />
+                  developing algorithms. With our 
+                  integrated algorithm visualizer
+                   and online IDE, you can
+                  explore, experiment, and master the 
                   art of algorithms.
                 </p>
                 <Button
@@ -64,29 +66,29 @@ export default function Home() {
           <Image src="/images/icons8-algorithm-64.png" alt="Aurora" width={100} height={100}></Image>
          </div> */}
 
-                <div className="w-full md:w-1/2 flex justify-center items-center">
-                  <Image
+                
+            </div>
+            <div className="w-full md:w-1/2 flex justify-center items-center">
+                  {/* <Image
                     width={800}
                     height={800}
                     src="/gifs/homescreen.gif"
                     alt="Algorithm Visualization"
                     className="max-w-xs rounded-lg z-20 mt-4 shadow-md sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto"
-                  />
+                  /> */}
                 </div>
-              </BackgroundLines>
-            </div>
           </div>
 
           <div className="about-text-section flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-10 gap-8">
-            <div className="flex flex-col w-full md:w-1/2 text-left items-start">
-              <h1 className="font-bold text-black text-3xl sm:text-4xl md:text-5xl leading-tight">
+            <div className="flex flex-col w-full md:w-1/2 text-left items-start bg-[rgba(0,0,0,0.5] backdrop-blur-sm rounded-3xl  shadow-lg backdrop:shadow-2xl">
+              <h1 className="font-bold text-white text-3xl sm:text-4xl md:text-5xl leading-tight">
                 Experience the Power of 
                 Algorithm Visualization
                
                 and Online Coding
               </h1>
             </div>
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-400 mt-4 leading-relaxed max-w-xl">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-400 mt-4 leading-relaxed max-w-xl bg-[rgba(0,0,0,0.5] backdrop-blur-sm rounded-3xl  shadow-lg backdrop:shadow-2xl">
               VisualizeX provides a comprehensive web application that combines
               a powerful development environment with interactive tools for
               learning algorithms. With algorithm visualization, an online
@@ -127,7 +129,7 @@ export default function Home() {
           </div>
           <div className="Description-section flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-10 gap-8 bg-none">
             <div className="flex flex-col w-full md:w-1/2 text-left items-start">
-              <h2 className="font-bold text-black text-3xl sm:text-4xl md:text-4xl leading-tight">
+              <h2 className="font-bold text-white text-3xl sm:text-4xl md:text-4xl leading-tight">
                 VisualizeX: Empowering Developers with Algorithm Visualization
                 and Online IDE
               </h2>
@@ -151,10 +153,10 @@ export default function Home() {
           </div>
 
           <div className="Contact-text-section flex flex-col items-center justify-center text-center">
-            <h1 className="font-bold text-3xl sm:text-xl md:text-3xl text-black mt-4 leading-relaxed">
+            <h1 className="font-bold text-3xl sm:text-xl md:text-3xl text-white mt-4 leading-relaxed">
               Contact Us
             </h1>
-            <h2 className="font-bold text-lg sm:text-xl md:text-xl text-black mt-4 leading-relaxed">
+            <h2 className="font-bold text-lg sm:text-xl md:text-xl text-white mt-4 leading-relaxed">
               If you have any questions or need assistance, feel free to reach
               out to us.
             </h2>
@@ -173,15 +175,15 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="footer-section flex flex-col md:flex-row items-left justify-between px-6 md:px-16 lg:mt-5 lg:mb-2 py-10 gap-8">
+          <div className="footer-section flex flex-col md:flex-row items-left justify-between px-6 md:px-16 lg:mt-5 lg:mb-2 py-10 gap-8 bg-[rgba(0,0,0,0.5] backdrop-blur-sm rounded-3xl  shadow-lg backdrop:shadow-2xl">
             <div className="flex flex-col sm:items-start ">
               <span className="mb-2 font-bold text-3xl">VisualizeX</span>
-              <span className="mb-2 font-bold text-black">Teams:</span>
+              <span className="mb-2 font-bold text-white">Teams:</span>
               <span className="mb-2 text-gray-400">Shreyash Bhosale</span>
               <span className="mb-2 text-gray-400">Eklakh Ansari</span>
             </div>
             <div className="flex flex-col sm:items-start ">
-              <span className="mb-2 font-bold text-black">Resources :</span>
+              <span className="mb-2 font-bold text-white">Resources :</span>
               <span className="mb-2 text-gray-400">Sorting Algorithms</span>
               <span className="mb-2 text-gray-400">Why Learn Algorithms</span>
               <span className="mb-2 text-gray-400">Type of Algorithms</span>
@@ -205,7 +207,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </motion.div>
-    </AuroraBackground>
+        <BackgroundBeams className="fixed inset-0 z-[-1]"/>
+    </>
+       
+    //   </motion.div>
+    // </AuroraBackground>
   );
 }

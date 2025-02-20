@@ -21,6 +21,9 @@ export function bubbleSort(array: number[]): SortStep[] {
         comparison: [j, j + 1], // Indices being compared
       });
 
+      // Check if the current element is greater than the next element
+      
+
       if (arr[j] > arr[j + 1]) {
         // Swap elements
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];

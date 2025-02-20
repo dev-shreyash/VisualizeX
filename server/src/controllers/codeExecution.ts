@@ -160,6 +160,7 @@ const checkAndInstallCompiler = async (language: string): Promise<void> => {
             ? ["apt-get", "update"]
             : (checkCommandAvailability("sudo") ? ["sudo", "apt-get", "update"] : null);
           if (!updateCmd) {
+
             throw new Error("Not running as root and 'sudo' is not available. Please install Java manually.");
           }
           runLinuxCommand(updateCmd);
