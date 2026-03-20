@@ -20,11 +20,14 @@ import { signInSchema } from "@/schemas/signInSchema";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 
+import { useSearchParams } from "next/navigation";
+  import { useEffect } from "react";
+
 export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -37,38 +40,14 @@ export default function SignInForm() {
   const { toast } = useToast();
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    setIsLoading(true);
-    const result = await signIn("credentials", {
-      redirect: false,
-      identifier: data.identifier, // use correct field names
+    setIsSubmitting(true);
+
+    await signIn("credentials", {
+      identifier: data.identifier,
       password: data.password,
+      callbackUrl: "/dashboard",
     });
-
-    console.log(result);
-
-    if (result?.error) {
-      if (result.error === "CredentialsSignin") {
-        toast({
-          title: "Login Failed",
-          description: "Incorrect username or password",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    }
-    
-
-    if (result?.ok) {
-      router.replace("/dashboard");
-      window.location.reload();
-    }
   };
-
   const handleOAuthSignIn = async (provider: string) => {
     const result = await signIn(provider, { callbackUrl: "/dashboard" });
     console.log(result);
@@ -81,6 +60,20 @@ export default function SignInForm() {
     }
   };
 
+
+
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+
+    if (error === "CredentialsSignin") {
+      toast({
+        title: "Login Failed",
+        description: "Incorrect username or password",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, toast]);
   return (
     <div className="flex justify-center w-full lg:mx-5 items-center min-h-screen h-72 bg-slate-200">
       <div className="relative w-full max-w-md p-8 rounded-lg shadow-[0_2px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]">
@@ -91,6 +84,7 @@ export default function SignInForm() {
               Welcome Back to VisualizeX
             </h1>
             <p className="mb-4">Sign in to continue your learning</p>
+            <p className="text-xs text-gray-500 mb-3"> (use `demo@123` and `12345678` to sign in for testing)</p>
           </div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -126,7 +120,7 @@ export default function SignInForm() {
                   </FormItem>
                 )}
               />
-             <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
