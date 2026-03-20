@@ -1,12 +1,10 @@
 "use client";
 
-import { AuroraBackground } from "@/components/ui/aurora-background";
+
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { BackgroundLines } from "@/components/ui/backgroud-lines";
-import { date } from "zod";
+
 import { BackgroundBeams } from "@/components/ui/background-beams";
 
 export default function Home() {

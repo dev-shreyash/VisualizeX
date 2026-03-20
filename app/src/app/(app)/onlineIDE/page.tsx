@@ -308,7 +308,7 @@ function OnlineIDE() {
   return (
     <div className="flex min-h-screen bg-gray-900 lg:p-4 w-full">
     <div className="flex w-full h-full z-50 absolute top-0 left-0 items-center justify-center bg-gray-900/50">
-      <p>Code Execution is not available (aws bills are high😓)</p>
+      <p className="text-yellow-500 text-2xl">Code Execution is not available right now (aws bills are high😓)</p>
     </div>
       <div
         className="flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"
