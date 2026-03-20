@@ -13,11 +13,11 @@ export const authOptions: NextAuthOptions = {
       id: 'credentials',
       name: 'Credentials',
       credentials: {
-        identifier: { label: 'Email/Username', type: 'text' }, // match the name
-        password: { label: 'Password', type: 'password' },     // match the name
+        identifier: { label: 'Email/Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials: any): Promise<any> {
-        console.time('authorize')
+        console.time('authorize');
         try {
           const parsedCredentials = signInSchema.parse(credentials);
           const user = await db.user.findFirst({
@@ -55,6 +55,7 @@ export const authOptions: NextAuthOptions = {
         }
       }
     }),
+
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -64,27 +65,29 @@ export const authOptions: NextAuthOptions = {
           access_type: 'offline',
           response_type: 'code',
           scope: 'openid email profile',
-        }
-      }
+        },
+      },
     }),
+
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       authorization: {
         params: {
           scope: 'user:email',
-        }
-      }
+        },
+      },
     }),
   ],
-  debug: true,
+
   adapter: PrismaAdapter(db),
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.username = user.username;
-        token.role = user.role; // Add role to the JWT token
+        token.username = user.username; // No default values
+        token.role = user.role;
       }
       return token;
     },
@@ -92,28 +95,21 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.username = token.username;
-        session.user.role = token.role; // Add role to the session
+        session.user.role = token.role;
       }
       return session;
     },
   },
-  
+
   session: {
     strategy: 'jwt',
   },
-  cookies: {
-    sessionToken: {
-      name: 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',  // Set to true in production
-        sameSite: 'lax',  // This is important for cross-origin cookies
-        path: '/',  // Make sure the cookie is accessible throughout the site
-      },
-    },
-  },
+
   secret: process.env.NEXTAUTH_SECRET,
+
   pages: {
     signIn: '/sign-in',
   },
+
+  debug: true,
 };

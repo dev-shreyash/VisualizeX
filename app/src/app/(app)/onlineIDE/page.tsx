@@ -307,6 +307,9 @@ function OnlineIDE() {
   };
   return (
     <div className="flex min-h-screen bg-gray-900 lg:p-4 w-full">
+    <div className="flex w-full h-full z-50 absolute top-0 left-0 items-center justify-center bg-gray-900/50">
+      <p>Code Execution is not available (aws bills are high😓)</p>
+    </div>
       <div
         className="flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"
         ref={divRef}
@@ -354,7 +357,7 @@ function OnlineIDE() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
+                  Running
                 </>
               ) : (
                 <div className="flex items-center gap-2 text-xl">
