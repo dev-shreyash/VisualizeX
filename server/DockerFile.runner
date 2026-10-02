@@ -1,0 +1,18 @@
+FROM alpine:3.19
+
+RUN addgroup -g 1001 sandbox && \
+    adduser -D -u 1001 -G sandbox runner
+
+RUN apk add --no-cache \
+    python3 \
+    nodejs \
+    gcc \
+    g++ \
+    musl-dev \
+    openjdk17-jdk \
+    coreutils
+
+WORKDIR /sandbox
+RUN chown runner:sandbox /sandbox
+
+USER runner
