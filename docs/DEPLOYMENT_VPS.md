@@ -1,6 +1,6 @@
-# VisualizeX Backend: Linux VPS Deployment Guide (Vercel Frontend Hybrid)
+# VisualizeX Backend: Linux VPS Deployment Guide (Direct IP + Vercel Frontend)
 
-This guide provides exact, step-by-step instructions for deploying the **VisualizeX Execution Backend (`/server`)** to a Linux VPS (Ubuntu 22.04/24.04 LTS or Debian 12), while the **Frontend (`/app`) is hosted on Vercel**.
+This guide provides exact, step-by-step instructions for deploying the **VisualizeX Execution Backend (`/server`)** directly using your **Linux VPS IP Address** (e.g. `http://<YOUR_VPS_IP>:5000`), with MongoDB running in **MongoDB Atlas Cloud** and the **Frontend (`/app`) hosted on Vercel**. No domain name or reverse proxy setup is required.
 
 ---
 
@@ -11,7 +11,7 @@ This guide provides exact, step-by-step instructions for deploying the **Visuali
 │        User Browser             │
 └───────────────┬─────────────────┘
                 │
-                │ HTTPS (User actions, code editor, visualizer)
+                │ HTTPS (Standard Vercel domain or custom domain)
                 ▼
 ┌────────────────────────────────────────────────────────┐
 │  Vercel Edge & Serverless Deployment (/app)            │
@@ -21,24 +21,19 @@ This guide provides exact, step-by-step instructions for deploying the **Visuali
 │  - Signs HMAC-SHA256 Server Assertion Token            │
 └───────────────────────┬────────────────────────────────┘
                         │
-                        │ S2S HTTPS (Bearer signed assertion)
-                        │ Endpoint: https://api.yourdomain.com/api/execute
+                        │ S2S HTTP Request (Server-to-Server)
+                        │ Endpoint: http://<YOUR_VPS_IP>:5000/api/execute
+                        │ Header: Authorization: Bearer <signed-token>
                         ▼
 ┌────────────────────────────────────────────────────────┐
 │  Linux VPS (Ubuntu 22.04/24.04 LTS)                    │
 │                                                        │
 │   ┌────────────────────────────────────────────────┐   │
-│   │ Caddy Reverse Proxy (:80 / :443)               │   │
-│   │ - Automatic Let's Encrypt TLS Certificate      │   │
-│   │ - Injects Security Headers                     │   │
-│   └───────────────────────┬────────────────────────┘   │
-│                           │ Internal Docker Bridge     │
-│                           ▼                            │
-│   ┌────────────────────────────────────────────────┐   │
 │   │ Elysia.js / Bun Execution Worker (:5000)       │   │
+│   │ - Directly exposed on port 5000                │   │
 │   │ - Verifies HMAC-SHA256 Assertion & Scope       │   │
 │   │ - Concurrency Semaphore (MAX_CONCURRENT=5)     │   │
-│   │ - Connects to MongoDB (Saved Code)             │   │
+│   │ - Connects to MongoDB Atlas Cloud (Saved Code) │   │
 │   └───────────────────────┬────────────────────────┘   │
 │                           │ Docker Socket              │
 │                           ▼                            │
@@ -51,6 +46,9 @@ This guide provides exact, step-by-step instructions for deploying the **Visuali
 │   └────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────┘
 ```
+│   └────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -59,16 +57,15 @@ This guide provides exact, step-by-step instructions for deploying the **Visuali
 ### 2.1 Server Requirements
 - **OS**: Ubuntu 22.04 LTS or 24.04 LTS (x86_64)
 - **Specs**: 2 vCPU, 4 GB RAM, 20 GB SSD (or higher)
-- **DNS**: An `A` record pointing to your VPS IP (e.g. `api.yourdomain.com` -> `203.0.113.10`)
+- **No Domain Required**: Uses your public VPS IP address (e.g. `123.45.67.89`)
 
 ### 2.2 Configure Firewall (UFW)
-Only SSH, HTTP (80 for Let's Encrypt challenge & redirect), and HTTPS (443) must be open:
+Open SSH (22) and the Elysia Execution Backend port (5000):
 ```bash
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
+sudo ufw allow 5000/tcp
 sudo ufw enable
 sudo ufw status
 ```
@@ -133,15 +130,14 @@ cp .env.example .env
 nano .env
 ```
 
-Ensure the following variables are configured:
+Set the following variables:
 ```ini
-# 1. Your domain for the API (must have an A record pointing to this VPS)
-API_DOMAIN=api.yourdomain.com
-LETSENCRYPT_EMAIL=admin@yourdomain.com
+# 1. Port for execution worker
+PORT=5000
 
 # 2. Secret shared between Vercel and VPS
 # Generate using: openssl rand -hex 32
-INTERNAL_SERVICE_SECRET=a8f3b49c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a
+INTERNAL_SERVICE_SECRET=paste_your_32_byte_hex_secret_here
 REQUIRE_S2S_AUTH=true
 
 # 3. MongoDB Atlas Cloud Connection String
@@ -159,71 +155,19 @@ RUNNER_IMAGE=visualizex-runner:latest
 CLIENT_URL=*
 ```
 
-### 5.4 Handling Port 80 Conflicts (If Port 80 is Already in Use)
-If you see the error:
-`failed to bind host port 0.0.0.0:80/tcp: address already in use`
-
-This means another web server (usually Nginx or Apache) is already running on port 80 on your VPS.
-
-**Check what is using port 80:**
-```bash
-sudo ss -tulpn | grep ':80 '
-# or: sudo lsof -i :80
-```
-
-Choose **Option A** or **Option B**:
-
-#### Option A: If you want Caddy to manage HTTPS (Recommended)
-Stop and disable the conflicting service (e.g., Apache or default Nginx):
-```bash
-sudo systemctl stop nginx && sudo systemctl disable nginx
-# or for Apache:
-# sudo systemctl stop apache2 && sudo systemctl disable apache2
-```
-Then run:
+### 5.4 Start Backend Service
 ```bash
 docker compose up -d
 ```
 
-#### Option B: If you already use Nginx on your VPS for other websites
-Keep your existing Nginx and do **not** run Caddy. `visualizex-api` is already exposed on `127.0.0.1:5000`!
-1. Start only the backend worker:
-   ```bash
-   docker compose up -d visualizex-api
-   ```
-2. In your existing Nginx configuration (`/etc/nginx/sites-available/api.yourdomain.com`):
-   ```nginx
-   server {
-       server_name api.yourdomain.com;
-       listen 80;
-
-       location / {
-           proxy_pass http://127.0.0.1:5000;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_set_header X-Forwarded-Proto $scheme;
-       }
-   }
-   ```
-3. Issue SSL with Certbot: `sudo certbot --nginx -d api.yourdomain.com`
-
----
-
-### 5.5 Start Backend Services
-```bash
-docker compose up -d
-```
-
-Verify the containers are running and healthy:
+Verify that `visualizex-api` is running and healthy on port 5000:
 ```bash
 docker compose ps
 ```
 Expected output:
 ```
-NAME               IMAGE                   STATUS                    PORTS
-visualizex-api     visualizex-api:latest   Up (healthy)              127.0.0.1:5000->5000/tcp
-visualizex-proxy   caddy:2.8-alpine        Up                        0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+NAME             IMAGE                   STATUS                    PORTS
+visualizex-api   visualizex-api:latest   Up (healthy)              0.0.0.0:5000->5000/tcp
 ```
 
 ---
@@ -236,12 +180,12 @@ In your **Vercel Project Dashboard** (`https://vercel.com`):
 
 | Variable Name | Value | Description |
 |---|---|---|
-| `INTERNAL_API_URL` | `https://api.yourdomain.com` | Public HTTPS URL of your VPS backend |
+| `INTERNAL_API_URL` | `http://<YOUR_VPS_IP>:5000` | Direct HTTP endpoint of your VPS backend |
 | `INTERNAL_SERVICE_SECRET` | *(Same hex secret from VPS `.env`)* | Shared HMAC-SHA256 signing secret |
 | `DATABASE_URL` | `postgresql://...` | PostgreSQL connection string for NextAuth (Neon, Supabase, or RDS) |
 | `NEXTAUTH_SECRET` | *(32-byte base64 string)* | NextAuth session encryption key |
 | `NEXTAUTH_URL` | `https://your-app.vercel.app` | Production URL of your Vercel frontend |
-| `NEXT_PUBLIC_API_URL` | `https://api.yourdomain.com/api` | Optional public API endpoint |
+| `NEXT_PUBLIC_API_URL` | `http://<YOUR_VPS_IP>:5000/api` | Optional public API endpoint |
 | `GOOGLE_CLIENT_ID` | *(Optional)* | Google OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | *(Optional)* | Google OAuth Client Secret |
 | `GITHUB_CLIENT_ID` | *(Optional)* | GitHub OAuth Client ID |
@@ -254,27 +198,27 @@ In your **Vercel Project Dashboard** (`https://vercel.com`):
 ## 7. Verification & Health Checks
 
 ### 7.1 Verify VPS Backend Health
-From any machine, verify the HTTPS endpoints on your VPS:
+From your local terminal or VPS, verify the endpoints:
 ```bash
 # Check liveness
-curl https://api.yourdomain.com/health
+curl http://<YOUR_VPS_IP>:5000/health
 # Response: {"status":"OK","uptime":...,"timestamp":"..."}
 
-# Check readiness (MongoDB & Docker daemon status)
-curl https://api.yourdomain.com/ready
+# Check readiness (MongoDB Atlas & Docker daemon status)
+curl http://<YOUR_VPS_IP>:5000/ready
 # Response: {"ready":true,"database":"connected","docker":"available","activeExecutions":0,"maxConcurrent":5}
 ```
 
 ### 7.2 Verify S2S Assertion Protection
 Confirm that untrusted public requests without a valid assertion from Vercel are rejected:
 ```bash
-curl -i -X POST https://api.yourdomain.com/api/execute \
+curl -i -X POST http://<YOUR_VPS_IP>:5000/api/execute \
   -H "Content-Type: application/json" \
   -d '{"language":"python","code":"print(\"test\")"}'
 ```
 Expected response:
 ```
-HTTP/2 401 Unauthorized
+HTTP/1.1 401 Unauthorized
 {"error":"Missing or malformed Authorization header","status":401}
 ```
 

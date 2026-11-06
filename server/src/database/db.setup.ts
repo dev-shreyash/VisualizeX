@@ -5,10 +5,7 @@ const MONGO_URI = process.env.MONGODB_URL;
 
 export const connectDB = async (): Promise<void> => {
   if (!MONGO_URI) {
-    console.error("❌ MONGODB_URL environment variable is missing.");
-    if (process.env.NODE_ENV === "production") {
-      process.exit(1);
-    }
+    console.warn("⚠️ MONGODB_URL environment variable is missing. Saved code persistence will be disabled.");
     return;
   }
 
@@ -20,9 +17,7 @@ export const connectDB = async (): Promise<void> => {
     console.log("✅ MongoDB Connected");
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error);
-    if (process.env.NODE_ENV === "production") {
-      process.exit(1);
-    }
+    console.warn("Server will continue running. Mongoose will attempt to reconnect in the background.");
   }
 };
 
