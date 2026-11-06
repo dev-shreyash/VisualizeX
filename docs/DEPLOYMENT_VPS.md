@@ -144,14 +144,11 @@ LETSENCRYPT_EMAIL=admin@yourdomain.com
 INTERNAL_SERVICE_SECRET=a8f3b49c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a
 REQUIRE_S2S_AUTH=true
 
-# 3. MongoDB connection
-# Use local container (default):
-MONGODB_URL=mongodb://mongo:27017/CODES
+# 3. MongoDB Atlas Cloud Connection String
+# Paste your full MongoDB Atlas connection URI:
+MONGODB_URL=mongodb+srv://<username>:<password>@cluster0.mongodb.net/CODES?retryWrites=true&w=majority
 MONGODB_DB_NAME=CODES
 MONGODB_CODE_COLLECTION=users
-
-# Or use MongoDB Atlas:
-# MONGODB_URL=mongodb+srv://<user>:<password>@cluster.mongodb.net/CODES?retryWrites=true&w=majority
 
 # 4. Sandbox limits
 MAX_CONCURRENT=5
@@ -162,21 +159,70 @@ RUNNER_IMAGE=visualizex-runner:latest
 CLIENT_URL=*
 ```
 
-### 5.4 Start Backend Services
+### 5.4 Handling Port 80 Conflicts (If Port 80 is Already in Use)
+If you see the error:
+`failed to bind host port 0.0.0.0:80/tcp: address already in use`
+
+This means another web server (usually Nginx or Apache) is already running on port 80 on your VPS.
+
+**Check what is using port 80:**
 ```bash
-docker compose build
+sudo ss -tulpn | grep ':80 '
+# or: sudo lsof -i :80
+```
+
+Choose **Option A** or **Option B**:
+
+#### Option A: If you want Caddy to manage HTTPS (Recommended)
+Stop and disable the conflicting service (e.g., Apache or default Nginx):
+```bash
+sudo systemctl stop nginx && sudo systemctl disable nginx
+# or for Apache:
+# sudo systemctl stop apache2 && sudo systemctl disable apache2
+```
+Then run:
+```bash
 docker compose up -d
 ```
 
-Verify that all three services are running and healthy:
+#### Option B: If you already use Nginx on your VPS for other websites
+Keep your existing Nginx and do **not** run Caddy. `visualizex-api` is already exposed on `127.0.0.1:5000`!
+1. Start only the backend worker:
+   ```bash
+   docker compose up -d visualizex-api
+   ```
+2. In your existing Nginx configuration (`/etc/nginx/sites-available/api.yourdomain.com`):
+   ```nginx
+   server {
+       server_name api.yourdomain.com;
+       listen 80;
+
+       location / {
+           proxy_pass http://127.0.0.1:5000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+   }
+   ```
+3. Issue SSL with Certbot: `sudo certbot --nginx -d api.yourdomain.com`
+
+---
+
+### 5.5 Start Backend Services
+```bash
+docker compose up -d
+```
+
+Verify the containers are running and healthy:
 ```bash
 docker compose ps
 ```
 Expected output:
 ```
 NAME               IMAGE                   STATUS                    PORTS
-visualizex-api     visualizex-api:latest   Up (healthy)              5000/tcp
-visualizex-mongo   mongo:7.0               Up (healthy)              27017/tcp
+visualizex-api     visualizex-api:latest   Up (healthy)              127.0.0.1:5000->5000/tcp
 visualizex-proxy   caddy:2.8-alpine        Up                        0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
 ```
 
@@ -267,26 +313,8 @@ docker compose down
 docker compose up -d
 ```
 
-### 8.4 Automated Daily MongoDB Backup (Cron)
-If using the local MongoDB container on the VPS, set up automated daily backups:
-```bash
-sudo mkdir -p /opt/visualizex/backups/mongo
-
-# Create backup script
-sudo tee /opt/visualizex/backup-mongo.sh > /dev/null << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/opt/visualizex/backups/mongo"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-docker exec visualizex-mongo mongodump --db CODES --archive > "${BACKUP_DIR}/mongo_CODES_${TIMESTAMP}.archive"
-# Delete backups older than 14 days
-find "${BACKUP_DIR}" -type f -name "*.archive" -mtime +14 -delete
-EOF
-
-sudo chmod +x /opt/visualizex/backup-mongo.sh
-
-# Add to crontab to run daily at 3:00 AM
-(crontab -l 2>/dev/null; echo "0 3 * * * /opt/visualizex/backup-mongo.sh") | crontab -
-```
+### 8.4 MongoDB Atlas Cloud Backups
+Because you are using **MongoDB Atlas Cloud**, automated point-in-time restores and continuous cluster backups are managed natively by Atlas. You can trigger on-demand backups or review snapshot history directly in the **MongoDB Atlas Web Console** under your cluster's **Backup** tab without running local cron jobs.
 
 ### 8.5 Updating the Backend (Zero Downtime)
 When pushing code changes to `server/`:
