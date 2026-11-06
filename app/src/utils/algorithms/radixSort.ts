@@ -1,67 +1,65 @@
-interface SortStep {
-    array: number[];
-    currentLeftIndex?: number;
-    currentRightIndex?: number;
-    comparison?: [number, number];
-    swapped?: [number, number];
-    sorted?: boolean;
+export interface SortStep {
+  array: number[];
+  currentLeftIndex?: number;
+  currentRightIndex?: number;
+  comparison?: [number, number];
+  swapped?: [number, number];
+  sorted?: boolean;
+}
+
+function countingSortByDigit(arr: number[], exp: number, steps: SortStep[], offset: number): void {
+  const n = arr.length;
+  const output = new Array(n);
+  const count = new Array(10).fill(0);
+
+  for (let i = 0; i < n; i++) {
+    const val = arr[i] + offset;
+    const digit = Math.floor(val / exp) % 10;
+    count[digit]++;
   }
-  
-  function getMax(arr: number[]): number {
-    return Math.max(...arr);
+
+  for (let i = 1; i < 10; i++) {
+    count[i] += count[i - 1];
   }
-  
-  function countingSort(arr: number[], exp: number, steps: SortStep[]): void {
-    const n = arr.length;
-    const output = new Array(n);
-    const count = new Array(10).fill(0);
-  
-    // Store count of occurrences
-    for (let i = 0; i < n; i++) {
-      const index = Math.floor(arr[i] / exp) % 10;
-      count[index]++;
-    }
-  
-    // Change count[i] so that count[i] contains the actual position of this digit in output[]
-    for (let i = 1; i < 10; i++) {
-      count[i] += count[i - 1];
-    }
-  
-    // Build the output array
-    for (let i = n - 1; i >= 0; i--) {
-      const index = Math.floor(arr[i] / exp) % 10;
-      output[count[index] - 1] = arr[i];
-      count[index]--;
-    }
-  
-    // Copy the output array to arr[], so that arr[] contains sorted numbers according to the current digit
-    for (let i = 0; i < n; i++) {
-      arr[i] = output[i];
-    }
-  
-    steps.push({
-      array: [...arr],
-    });
+
+  for (let i = n - 1; i >= 0; i--) {
+    const val = arr[i] + offset;
+    const digit = Math.floor(val / exp) % 10;
+    output[count[digit] - 1] = arr[i];
+    count[digit]--;
   }
-  
-  export function radixSort(array: number[]): SortStep[] {
-    const steps: SortStep[] = [];
-    const arr = [...array]; // Clone the array to avoid mutating the original
-  
-    // Get the maximum number to know the number of digits
-    const max = getMax(arr);
-  
-    // Do counting sort for every digit
-    for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
-      countingSort(arr, exp, steps);
-    }
-  
-    // Final sorted state
-    steps.push({
-      array: [...arr],
-      sorted: true,
-    });
-  
+
+  for (let i = 0; i < n; i++) {
+    arr[i] = output[i];
+  }
+
+  steps.push({
+    array: [...arr],
+  });
+}
+
+export function radixSort(array: number[]): SortStep[] {
+  const steps: SortStep[] = [];
+  const arr = [...array];
+
+  if (arr.length <= 1) {
+    steps.push({ array: [...arr], sorted: true });
     return steps;
   }
-  
+
+  const min = Math.min(...arr);
+  // Offset to ensure all values are non-negative for digit extraction
+  const offset = min < 0 ? -min : 0;
+  const max = Math.max(...arr.map((x) => x + offset));
+
+  for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
+    countingSortByDigit(arr, exp, steps, offset);
+  }
+
+  steps.push({
+    array: [...arr],
+    sorted: true,
+  });
+
+  return steps;
+}

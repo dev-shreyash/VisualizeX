@@ -1,300 +1,218 @@
 "use client";
 
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
 import { useSessionData } from "@/app/hooks/useSessionData";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { set } from "zod";
 import Image from "next/image";
 import { saveCode } from "@/helper/saveCode";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { image } from "d3";
+
+interface TabConfig {
+  id: string;
+  label: string;
+  key: string;
+  monacoLanguage: string;
+  image: string;
+  extension: string;
+}
+
+const TABS: TabConfig[] = [
+  {
+    id: "1",
+    label: "Python",
+    key: "python",
+    monacoLanguage: "python",
+    image: "/images/python.svg",
+    extension: ".py",
+  },
+  {
+    id: "2",
+    label: "Java",
+    key: "java",
+    monacoLanguage: "java",
+    image: "/images/java.svg",
+    extension: ".java",
+  },
+  {
+    id: "3",
+    label: "C",
+    key: "c",
+    monacoLanguage: "c",
+    image: "/images/c.svg",
+    extension: ".c",
+  },
+  {
+    id: "4",
+    label: "C++",
+    key: "cpp",
+    monacoLanguage: "cpp",
+    image: "/images/cpp.svg",
+    extension: ".cpp",
+  },
+  {
+    id: "5",
+    label: "C# (Mono 6.8)",
+    key: "csharp",
+    monacoLanguage: "csharp",
+    image: "/images/csharp.svg",
+    extension: ".cs",
+  },
+  {
+    id: "6",
+    label: "JavaScript",
+    key: "javascript",
+    monacoLanguage: "javascript",
+    image: "/images/javascript.svg",
+    extension: ".js",
+  },
+];
+
+const STARTER_CODE: Record<string, string> = {
+  python: `# Python 3.11\nprint("Hello from Python!")\n`,
+  java: `// Java 17\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Java!");\n    }\n}\n`,
+  c: `// C (GCC 12)\n#include <stdio.h>\n\nint main() {\n    printf("Hello from C!\\n");\n    return 0;\n}\n`,
+  cpp: `// C++ (G++ 12)\n#include <iostream>\n\nint main() {\n    std::cout << "Hello from C++!" << std::endl;\n    return 0;\n}\n`,
+  csharp: `// C# (Mono 6.8 / C# 6)\nusing System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello from C#!");\n    }\n}\n`,
+  javascript: `// Node.js 20 LTS\nconsole.log("Hello from JavaScript!");\n`,
+};
 
 function OnlineIDE() {
   const { session, status } = useSessionData();
   const router = useRouter();
   const divRef = useRef<HTMLDivElement>(null);
-
-  const [userStatus, setUserStatus] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("1");
-  const [editorContent, setEditorContent] = useState<Record<string, string>>(
-    {}
-  );
-  const [stdin, setStdin] = useState("");
-  const [commentSymbols, setCommentSymbols] = useState<string[]>([]);
-  const [terminalHistory, setTerminalHistory] = useState<string[]>([]); // Terminal History
-  const [userData, setUserData] = useState<number[]>([]); // Initialized to an empty array
-
-  const [code, setCode] = useState<string>("");
-
-  const [username, setUserName] = useState<string>("");
-  const [language, setLanguage] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const tabs = [
-    {
-      id: "1",
-      label: "Python",
-      key: "python",
-      image: "/images/python.svg",
-      extension: ".py",
-    },
-    {
-      id: "2",
-      label: "Java",
-      key: "java",
-      image: "/images/java.svg",
-      extension: ".java",
-    },
-    { id: "3", label: "C", key: "c", image: "/images/c.svg", extension: ".c" },
-    {
-      id: "4",
-      label: "C++",
-      key: "cpp",
-      image: "/images/cpp.svg",
-      extension: ".cpp",
-    },
-    {
-      id: "5",
-      label: "C#",
-      key: "csharp",
-      image: "/images/csharp.svg",
-      extension: ".cs",
-    },
-    {
-      id: "6",
-      label: "JavaScript",
-      key: "javascript",
-      image: "/images/javascript.svg",
-      extension: ".js",
-    },
-  ];
-  // State to store the window width
-  const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== "undefined" ? window.innerWidth : 0
+  const [selectedTabId, setSelectedTabId] = useState("1");
+  const [editorContent, setEditorContent] = useState<Record<string, string>>(STARTER_CODE);
+  const [stdin, setStdin] = useState("");
+  const [terminalHistory, setTerminalHistory] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [fetchedLanguages, setFetchedLanguages] = useState<Set<string>>(new Set());
+
+  const currentTab = useMemo(
+    () => TABS.find((t) => t.id === selectedTabId) || TABS[0],
+    [selectedTabId]
   );
 
-  // Use useEffect to listen to window resizing
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
 
-    // Add event listener for resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    // Cleanup event listener on component unmount
+  const editorHeight = windowWidth >= 1024 ? "80vh" : "45vh";
+
+  // Fetch saved code for the active language independently without overwriting other tabs
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user?.username) return;
+
+    const langKey = currentTab.key;
+    if (fetchedLanguages.has(langKey)) return;
+
+    let isMounted = true;
+    axios
+      .get(`/api/code/${langKey}`)
+      .then((response) => {
+        if (!isMounted) return;
+        const savedCode = response.data?.code?.code;
+        if (typeof savedCode === "string" && savedCode.trim().length > 0) {
+          setEditorContent((prev) => ({
+            ...prev,
+            [langKey]: savedCode,
+          }));
+        }
+        setFetchedLanguages((prev) => new Set(prev).add(langKey));
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setFetchedLanguages((prev) => new Set(prev).add(langKey));
+        }
+      });
+
     return () => {
-      window.removeEventListener("resize", handleResize);
+      isMounted = false;
     };
-  }, []);
-
-  // Determine height based on window size
-  const editorHeight = windowWidth >= 1024 ? "90vh" : "40vh";
-  // Handle localStorage on client-side only
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedData = localStorage?.getItem("userData");
-      if (storedData) {
-        setUserData(JSON.parse(storedData));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (selectedTab === "1") {
-      setCommentSymbols(["#"]);
-    } else {
-      setCommentSymbols(["//"]);
-    }
-  }, [selectedTab]);
-
-  useEffect(() => {
-    setUserName(session?.user.username || "");
-    setLanguage(tabs.find((tab) => tab.id === selectedTab)?.key || "");
-  }, [username, language, tabs]);
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      setUserStatus(true);
-      console.log(username, language);
-      if (!username || !language) return; // Skip if either is missing
-
-      let isMounted = true; // To prevent state updates after unmount
-
-      axios
-        .get(`${process.env.NEXT_PUBLIC_API_URL}/code/${username}`, {
-          params: { language },
-        })
-        .then((response) => {
-          console.log("user code", response.data[0]?.code);
-          if (response.data[0]?.code === undefined) {
-            setEditorContent(
-              tabs.reduce(
-                (acc, tab) => ({
-                  ...acc,
-                  [tab.key]: `${commentSymbols}Write your ${tab.label} code here\n${commentSymbols}sort the below given array with bubble sort\narr=[${userData}]\n`,
-                }),
-                {}
-              )
-            );
-          } else {
-            setEditorContent(
-              tabs.reduce(
-                (acc, tab) => ({
-                  ...acc,
-                  [tab.key]: `${response.data[0]?.code}`,
-                }),
-                {}
-              )
-            );
-          }
-        })
-        .catch((err) => {
-          if (isMounted) {
-            setError("Failed to fetch code");
-            console.error(err);
-          }
-        });
-    }
-  }, [status, commentSymbols, userData, username, language]);
+  }, [currentTab.key, status, session?.user?.username, fetchedLanguages]);
 
   const handleRunCode = async () => {
-    const currentTab = tabs.find((tab) => tab.id === selectedTab);
-    if (!currentTab) return;
-
-    const code = editorContent[currentTab.key];
-    const language = currentTab.key;
+    const code = editorContent[currentTab.key] || "";
+    setIsSubmitting(true);
 
     try {
-      console.log("Sending code execution request...");
-      console.log("Code:", code);
-      console.log("Language:", language);
-      console.log("Input:", stdin);
+      const response = await axios.post("/api/execute", {
+        code,
+        language: currentTab.key,
+        inputs: stdin,
+      });
 
-      setIsSubmitting(true);
-
-      const response = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL + "/execute",
-        {
-          code,
-          language,
-          inputs: stdin,
-        }
-      );
-
-      console.log("Backend Response:", response.data); // Log the backend response
-
-      // Check if the response has the expected structure
-      if (response.data && response.data.status === 200) {
-        // Properly append the result to the terminal history
-        setTerminalHistory((prev) => [...prev, `>>${response.data.result}`]);
-        setIsSubmitting(false);
-      } else {
+      const data = response.data;
+      if (response.status === 200 && data.exitCode === 0) {
         setTerminalHistory((prev) => [
           ...prev,
-          `Error: ${response.data.error}`,
+          `[Run: ${currentTab.label} in ${data.wallTimeMs}ms]`,
+          data.stdout || "(No output)",
+          "-----------------------------------",
         ]);
-        setIsSubmitting(false);
+      } else {
+        const errorMsg = data.error || data.stderr || "Execution failed";
+        setTerminalHistory((prev) => [
+          ...prev,
+          `[Failed: ${currentTab.label} (Exit ${data.exitCode ?? 1}) in ${data.wallTimeMs ?? 0}ms]`,
+          errorMsg,
+          "-----------------------------------",
+        ]);
       }
     } catch (error: any) {
-      console.log("Error:", error); // Log the error
-      setTerminalHistory((prev) => [...prev, `Error: ${error.message}`]);
+      const errMsg = error.response?.data?.error || error.message || "Execution error";
+      setTerminalHistory((prev) => [
+        ...prev,
+        `[Error: ${currentTab.label}]`,
+        errMsg,
+        "-----------------------------------",
+      ]);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleTerminalInput = async (input: string) => {
-    setTerminalHistory((prev) => [...prev, `> ${input}`]); // Add user input to history
-    setStdin(""); // Clear input after submitting
-
-    try {
-      const currentTab = tabs.find((tab) => tab.id === selectedTab);
-      const code = editorContent[currentTab?.key || "python"];
-      const language = currentTab?.key || "python";
-
-      console.log("Sending terminal input...");
-      console.log("Code:", code);
-      console.log("Language:", language);
-      console.log("Input:", input);
-
-      const response = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL + "/execute",
-        {
-          code,
-          language,
-          inputs: input,
-        }
-      );
-
-      console.log("Backend Response:", response.data); // Log the backend response
-
-      // Check if the response has the expected structure
-      if (response.data && response.data.status === 200) {
-        // Properly append the result to the terminal history
-        setTerminalHistory((prev) => [...prev, ` ${response.data.result}`]);
-      } else {
-        setTerminalHistory((prev) => [
-          ...prev,
-          `Error: ${response.data.error}`,
-        ]);
-      }
-    } catch (error: any) {
-      console.log("Error:", error); // Log the error
-      setTerminalHistory((prev) => [...prev, `Error: ${error.message}`]);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && stdin.trim()) {
-      handleTerminalInput(stdin); // Call function to handle terminal input
-    }
-  };
-
-  if (status === "loading") return <div>Loading...</div>;
-
-  if (status === "unauthenticated") {
-    router.replace("/sign-in");
-    return <div>Please log in to access this feature</div>;
-  }
-
   const handleSubmitCode = async () => {
-    const code = editorContent?.[language];
-    console.log(code);
-    console.log(language, username);
-    if (language && username && code) {
-      const result = await saveCode(language, username, code);
+    const code = editorContent[currentTab.key];
+    if (!code) {
+      toast({
+        title: "Error",
+        description: "No code to save",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      if (result.message) {
-        toast({
-          title: "Success",
-          description: result.message,
-          variant: "default",
-        });
-      } else if (result.error) {
-        toast({
-          title: "Failed to save code",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
+    const result = await saveCode(currentTab.key, code);
+    if (result.message) {
+      toast({
+        title: "Saved",
+        description: `${currentTab.label} code saved successfully!`,
+        variant: "default",
+      });
     } else {
-      alert("Please provide valid code, username, and language.");
+      toast({
+        title: "Failed to save code",
+        description: result.error || "Could not save code",
+        variant: "destructive",
+      });
     }
   };
 
-  //handle lear terminal
   const clearTerminal = () => {
     setTerminalHistory([]);
   };
-
-  //handel full screen
 
   const handleFullScreen = () => {
     if (divRef.current) {
@@ -305,213 +223,161 @@ function OnlineIDE() {
       }
     }
   };
+
+  if (status === "loading") {
+    return <div className="p-8 text-center text-white">Loading Online IDE...</div>;
+  }
+
+  if (status === "unauthenticated") {
+    router.replace("/sign-in");
+    return <div className="p-8 text-center text-white">Please log in to access this feature</div>;
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-900 lg:p-4 w-full">
-    <div className="flex w-full h-full z-50 absolute  items-center justify-center bg-gray-900/50">
- 
-    </div>
       <div
-        className="flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"
+        className="flex flex-col w-full border-black bg-[#121212] rounded-md shadow-md pb-4"
         ref={divRef}
       >
-        {/* <div className="flex flex-col sm:flex-row justify-between items-center sm:px-2 sm:py-2">
-        
-
-          <h1 className="text-sm sm:text-base">User: {session?.user.email}</h1>
-
-        </div> */}
-
-        <div className="flex flex-col sm:flex-row justify-between lg:items-center sm:px-4 ">
-          <div className="lg:flex lg:w-[50%] items-center justify-between">
-            <div className="flex items-center justify-center ">
-              {/* Tabs */}
-              <div className="flex justify-around lg:justify-start space-x-2 w-full sm:w-auto sm:flex-1 p-2 m-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSelectedTab(tab.id)}
-                    className={`flex items-center justify-center rounded-3xl p-3 m-0 w-[50px] h-[50px] sm:w-auto shadow-gray-800 shadow-md ${
-                      selectedTab === tab.id
-                        ? "bg-gray-200 text-white"
-                        : "bg-gray-600 text-gray-700"
-                    }`}
-                  >
-                    <Image
-                      src={tab.image}
-                      alt={tab.label}
-                      width={30}
-                      height={30}
-                      className=""
-                    />
-                  </button>
-                ))}
-              </div>
+        {/* Top Control Bar */}
+        <div className="flex flex-col sm:flex-row justify-between lg:items-center sm:px-4 py-2 border-b border-gray-800">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Language Tabs */}
+            <div className="flex flex-wrap space-x-2 p-1">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedTabId(tab.id)}
+                  title={tab.label}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    selectedTabId === tab.id
+                      ? "bg-gray-200 text-black shadow"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <Image
+                    src={tab.image}
+                    alt={tab.label}
+                    width={20}
+                    height={20}
+                    className="inline-block"
+                  />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
             </div>
 
             {/* Run Button */}
-            <div className="flex items-center justify-between px-2 lg:p-0">
             <Button
               onClick={handleRunCode}
-              className="flex items-center bg-slate-200 text-black font-bold  hover:bg-slate-300 hover:border-lime-400  mx-2  rounded-lg"
+              disabled={isSubmitting}
+              className="flex items-center bg-emerald-600 text-white font-bold hover:bg-emerald-500 rounded-lg px-4 py-2 ml-2"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Running
+                  Running...
                 </>
               ) : (
-                <div className="flex items-center gap-2 text-xl">
-                  Run
+                <div className="flex items-center gap-2">
+                  <span>Run</span>
                   <Image
-                    src={"/images/settings.svg"}
+                    src="/images/settings.svg"
                     alt="run"
-                    width={30}
-                    height={30}
-                    className="rounded-full cursor-pointer"
+                    width={18}
+                    height={18}
                   />
                 </div>
               )}
             </Button>
-            <div className=" lg:hidden flex space-x-2 justify-end px-2">
-            <div className="relative group">
-              <button
-                onClick={handleSubmitCode}
-                className="p-2 flex items-center bg-slate-200 rounded-lg"
-              >
-                <Image
-                  src={"/images/save.svg"}
-                  alt="save"
-                  width={30}
-                  height={30}
-                  className="rounded-full cursor-pointer text-white "
-                />{" "}
-                Save code
-              </button>
-              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
-                Save code
-              </div>
-            </div>
-            <div className="relative group">
-              <div
-                className="flex bg-slate-200 p-2 items-center gap-2 text-xl rounded-md"
-                onClick={handleFullScreen}
-              >
-                <Image
-                  src={"/images/full-screen.svg"}
-                  alt="Full screen"
-                  width={30}
-                  height={30}
-                  className=" cursor-pointer"
-                />
-              </div>
-              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
-                Full Screen
-              </div>
-            </div>
           </div>
-            </div>
-          
-          </div>
-          <div className="hidden lg:flex space-x-2 justify-end px-2">
-            <div className="relative group">
-              <button
-                onClick={handleSubmitCode}
-                className="p-2 flex items-center bg-slate-200 rounded-lg"
-              >
-                <Image
-                  src={"/images/save.svg"}
-                  alt="save"
-                  width={30}
-                  height={30}
-                  className="rounded-full cursor-pointer text-white "
-                />{" "}
-                Save code
-              </button>
-              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
-                Save code
-              </div>
-            </div>
-            <div className="relative group">
-              <div
-                className="flex bg-slate-200 p-2 items-center gap-2 text-xl rounded-md"
-                onClick={handleFullScreen}
-              >
-                <Image
-                  src={"/images/full-screen.svg"}
-                  alt="Full screen"
-                  width={30}
-                  height={30}
-                  className=" cursor-pointer"
-                />
-              </div>
-              <div className="absolute left-1/2 w-20 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1">
-                Full Screen
-              </div>
-            </div>
+
+          <div className="flex items-center space-x-2 px-2 mt-2 sm:mt-0">
+            <Button
+              onClick={handleSubmitCode}
+              variant="outline"
+              className="flex items-center gap-2 bg-gray-800 text-white border-gray-700 hover:bg-gray-700 rounded-lg"
+            >
+              <Image src="/images/save.svg" alt="save" width={16} height={16} />
+              Save Code
+            </Button>
+
+            <Button
+              onClick={handleFullScreen}
+              variant="outline"
+              className="flex items-center bg-gray-800 text-white border-gray-700 hover:bg-gray-700 rounded-lg"
+              title="Full Screen"
+            >
+              <Image src="/images/full-screen.svg" alt="full screen" width={16} height={16} />
+            </Button>
           </div>
         </div>
 
-        <div className="flex flex-col p-3 sm:flex-row  gap-4 sm:gap-8">
-          {/* Editor for all screen sizes with different heights for sm and lg */}
-
-          <div className="w-full max-w-4xl mx-auto shadow-md">
-            <div className="flex text-white bg-[#1e1e1e] w-full py-4 px-5">
-              main{tabs.find((tab) => tab.id === selectedTab)?.extension}
+        {/* Editor & Output Panels */}
+        <div className="flex flex-col lg:flex-row gap-4 p-4">
+          {/* Monaco Editor Panel */}
+          <div className="w-full lg:w-[60%] flex flex-col shadow-md rounded-lg overflow-hidden border border-gray-800">
+            <div className="flex items-center justify-between text-gray-300 bg-[#1e1e1e] py-2 px-4 border-b border-gray-800 text-sm">
+              <span>main{currentTab.extension} ({currentTab.label})</span>
             </div>
             <Editor
-              height={editorHeight} // Dynamically set the height based on screen size
-              defaultLanguage={
-                tabs.find((tab) => tab.id === selectedTab)?.key || "javascript"
-              }
-              value={
-                editorContent[
-                  tabs.find((tab) => tab.id === selectedTab)?.key || ""
-                ]
-              }
+              height={editorHeight}
+              language={currentTab.monacoLanguage}
+              value={editorContent[currentTab.key] ?? STARTER_CODE[currentTab.key]}
               onChange={(value) =>
                 setEditorContent((prev) => ({
                   ...prev,
-                  [tabs.find((tab) => tab.id === selectedTab)?.key || ""]:
-                    value || "",
+                  [currentTab.key]: value || "",
                 }))
               }
               theme="vs-dark"
               options={{
                 minimap: { enabled: false },
                 wordWrap: "on",
-                wordWrapColumn: 80,
+                fontSize: 14,
+                automaticLayout: true,
               }}
             />
           </div>
 
-          {/* Terminal */}
-          <div className="flex flex-col h-[40vh] lg:h-screen w-full max-w-4xl  mx-auto">
-            <div
-              className="flex justify-between items-center text-white bg-[#1e1e1e] w-full p-2"
-              onClick={clearTerminal}
-            >
-              <div className="flex">Output</div>
-              <button className="border border-gray-300 rounded-md p-2 ">
-                Clear
-              </button>
-            </div>
-            <div className="w-full  max-w-4xl mx-auto p-4 bg-gray-800 text-gray-300 border-black border-gray-300 h-[90vh] overflow-auto">
-              <pre>&gt;&gt;</pre>
-              <div className="terminal-output mb-4">
-                {terminalHistory.map((line, index) => (
-                  <pre key={index} className="text-gray-300">
-                    {line}
-                  </pre>
-                ))}
+          {/* Terminal & Stdin Panel */}
+          <div className="w-full lg:w-[40%] flex flex-col space-y-4">
+            {/* Standard Input Box */}
+            <div className="flex flex-col border border-gray-800 rounded-lg overflow-hidden bg-[#1e1e1e]">
+              <div className="text-gray-300 text-sm px-4 py-2 border-b border-gray-800 font-medium">
+                Standard Input (stdin)
               </div>
-              <input
-                type="text"
+              <textarea
                 value={stdin}
-                onKeyDown={handleKeyPress}
                 onChange={(e) => setStdin(e.target.value)}
-                className="w-full p-2 font-terminal bg-inherit focus:outline-none"
-                autoFocus
+                placeholder="Enter standard input for program (sent before execution)..."
+                rows={3}
+                className="w-full p-3 bg-gray-900 text-gray-200 text-sm font-mono focus:outline-none resize-y"
               />
+            </div>
+
+            {/* Output Terminal */}
+            <div className="flex-1 flex flex-col border border-gray-800 rounded-lg overflow-hidden bg-[#1e1e1e]">
+              <div className="flex justify-between items-center text-gray-300 py-2 px-4 border-b border-gray-800 text-sm font-medium">
+                <span>Output Console</span>
+                <button
+                  onClick={clearTerminal}
+                  className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-2 py-1 rounded"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="flex-1 p-4 bg-gray-950 text-gray-200 font-mono text-sm overflow-auto max-h-[50vh] min-h-[30vh]">
+                {terminalHistory.length === 0 ? (
+                  <span className="text-gray-500 italic">No output yet. Click &quot;Run&quot; to execute.</span>
+                ) : (
+                  terminalHistory.map((line, index) => (
+                    <pre key={index} className="whitespace-pre-wrap leading-relaxed">
+                      {line}
+                    </pre>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

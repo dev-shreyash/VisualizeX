@@ -1,0 +1,24 @@
+{
+	# Global options block
+	email {$LETSENCRYPT_EMAIL:admin@example.com}
+	admin off
+}
+
+# The backend API domain or IP (configured via API_DOMAIN, defaults to localhost)
+{$API_DOMAIN:localhost} {
+	# Encode responses using modern compression algorithms
+	encode zstd gzip
+
+	# Security headers
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# Route incoming traffic directly to Elysia.js execution backend
+	reverse_proxy visualizex-api:5000
+}
+

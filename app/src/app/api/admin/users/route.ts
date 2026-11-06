@@ -1,8 +1,26 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { db } from "@/app/lib/database/database";
 
-// Fetch all users
+export const dynamic = "force-dynamic";
+
+async function requireAdminSession() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  if (session.user.role !== "ADMIN") {
+    return { error: NextResponse.json({ error: "Forbidden: Admin privileges required" }, { status: 403 }) };
+  }
+  return { session };
+}
+
+// Fetch all users (Admin only)
 export async function GET() {
+  const auth = await requireAdminSession();
+  if (auth.error) return auth.error;
+
   try {
     const users = await db.user.findMany({
       select: {
@@ -12,6 +30,7 @@ export async function GET() {
         role: true,
         createdAt: true,
       },
+      orderBy: { id: "asc" },
     });
     return NextResponse.json({ users });
   } catch (error) {
@@ -20,18 +39,30 @@ export async function GET() {
   }
 }
 
-// Delete a user
+// Delete a user (Admin only)
 export async function DELETE(request: Request) {
+  const auth = await requireAdminSession();
+  if (auth.error) return auth.error;
+
   try {
     const { id } = await request.json();
-    console.log(id);
 
     if (!id) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    }
+
+    // Prevent deleting oneself
+    if (auth.session.user.id && userId === Number(auth.session.user.id)) {
+      return NextResponse.json({ error: "Cannot delete the active admin account" }, { status: 400 });
+    }
+
     await db.user.delete({
-      where: { id: parseInt(id) },
+      where: { id: userId },
     });
 
     return NextResponse.json({ message: "User deleted successfully" });
@@ -41,8 +72,11 @@ export async function DELETE(request: Request) {
   }
 }
 
-// Update user details (username and email)
+// Update user details (username and email) (Admin only)
 export async function PATCH(request: Request) {
+  const auth = await requireAdminSession();
+  if (auth.error) return auth.error;
+
   try {
     const { id, username, email } = await request.json();
 
@@ -53,11 +87,24 @@ export async function PATCH(request: Request) {
       );
     }
 
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    }
+
     const updatedUser = await db.user.update({
-      where: { id: parseInt(id) },
+      where: { id: userId },
       data: {
         ...(username && { username }),
         ...(email && { email }),
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -68,18 +115,34 @@ export async function PATCH(request: Request) {
   }
 }
 
-// Update user role
+// Update user role (Admin only)
 export async function PUT(request: Request) {
+  const auth = await requireAdminSession();
+  if (auth.error) return auth.error;
+
   try {
     const { id, role } = await request.json();
 
-    if (!id || !role) {
-      return NextResponse.json({ error: "User ID and role are required" }, { status: 400 });
+    if (!id || !role || (role !== "USER" && role !== "ADMIN")) {
+      return NextResponse.json({ error: "User ID and valid role (USER or ADMIN) are required" }, { status: 400 });
+    }
+
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
     const updatedUser = await db.user.update({
-      where: { id: parseInt(id) },
+      where: { id: userId },
       data: { role },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json({ message: "User role updated successfully", user: updatedUser });

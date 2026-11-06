@@ -3,23 +3,22 @@
   "version": "1.0.50",
   "scripts": {
     "test": "jest",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "dotenv": "^16.4.7",
-    "elysia": "latest",
-    "express": "^4.21.2",
-    "mongoose": "^8.9.5",
-    "server": "file:"
+    "elysia": "^1.2.0",
+    "mongoose": "^8.9.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.14.9",
     "bun-types": "latest",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2"
   },
-  "module": "src/index.js"
+  "module": "src/index.ts"
 }

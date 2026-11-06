@@ -1,18 +1,54 @@
-FROM alpine:3.19
+FROM debian:bookworm-slim
 
-RUN addgroup -g 1001 sandbox && \
-    adduser -D -u 1001 -G sandbox runner
+# Prevent interactive debconf prompts
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apk add --no-cache \
+# Install curl, ca-certificates, gnupg for repository setup
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup Node.js 20 LTS repository
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+
+# Install all language compilers and runtimes:
+# - Python 3 (python3)
+# - Node.js 20 LTS (nodejs)
+# - C / C++ (gcc, g++, musl-dev / libc6-dev)
+# - Java (default-jdk-headless / openjdk-17)
+# - C# (mono-mcs, mono-runtime)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     nodejs \
     gcc \
     g++ \
-    musl-dev \
-    openjdk17-jdk \
-    coreutils
+    libc6-dev \
+    default-jdk-headless \
+    mono-mcs \
+    mono-runtime \
+    coreutils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Create isolated runner user and group with explicit non-root UID/GID
+RUN groupadd -g 1001 sandbox && \
+    useradd -m -u 1001 -g sandbox -s /bin/sh runner
+
+# Create and configure workspace permissions
 WORKDIR /sandbox
-RUN chown runner:sandbox /sandbox
+RUN chown -R runner:sandbox /sandbox && chmod 777 /sandbox
 
 USER runner
+
+# Sanity verify runtimes during build
+RUN python3 --version && \
+    node --version && \
+    gcc --version && \
+    g++ --version && \
+    java -version && \
+    mcs --version && \
+    mono --version

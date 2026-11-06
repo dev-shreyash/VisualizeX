@@ -102,15 +102,12 @@ export default function AlgorithmVisualization() {
     setUserData(data);
   };
 
+  // Reset pause state when user data changes
   useEffect(() => {
     setIsSorting(false);
+    setIsPaused(false);
+    setSortingTime(null);
   }, [userData]);
-
-  useEffect(() => {
-    if (isPaused) {
-      window.location.reload();
-    }
-  }, [isPaused]);
 
   const handlePopupSubmit = (length: number) => {
     setLengthOfArray(length);

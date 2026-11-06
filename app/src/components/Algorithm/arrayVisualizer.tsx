@@ -53,6 +53,14 @@ export default function Visualizer({
     }
 >(null);
   const startTimeRef = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const stepIndexRef = useRef<number>(0);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   // Algorithm map
   const algorithmMap: Record<string, Function> = {
@@ -130,30 +138,37 @@ export default function Visualizer({
     }
   }, [isSorting, algorithm.key]);
 
+  useEffect(() => {
+    stepIndexRef.current = 0;
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, [userData, algorithm.key]);
+
   // Process and render steps
   const processSteps = (steps: any) => {
-    let stepIndex = 0;
+    if (timerRef.current) clearTimeout(timerRef.current);
 
     const renderNextStep = () => {
-      if (isPaused || !isSorting || stepIndex >= steps.length) {
-        if (stepIndex >= steps.length) {
-          setSortingComplete(true);
-          const endTime = Date.now();
-          const elapsedTime =
-            (endTime - (startTimeRef.current ?? endTime)) / 1000;
-          setSortingTime(elapsedTime);
-          //onSortingComplete(elapsedTime); // Notify parent
-        }
+      if (isPaused || !isSorting) {
+        if (timerRef.current) clearTimeout(timerRef.current);
         return;
       }
 
-      setCurrentStep(steps[stepIndex]);
-      stepIndex++;
+      if (stepIndexRef.current >= steps.length) {
+        setSortingComplete(true);
+        const endTime = Date.now();
+        const elapsedTime =
+          (endTime - (startTimeRef.current ?? endTime)) / 1000;
+        setSortingTime(elapsedTime);
+        return;
+      }
+
+      setCurrentStep(steps[stepIndexRef.current]);
+      stepIndexRef.current++;
 
       const stepDuration =
-      speed === 1 ? 0 : speed === 0.75 ? 150 : speed === 0.5 ? 300 : speed === 0.25 ? 600 : 3600;
+        speed === 1 ? 0 : speed === 0.75 ? 150 : speed === 0.5 ? 300 : speed === 0.25 ? 600 : 3600;
 
-      setTimeout(renderNextStep, stepDuration);
+      timerRef.current = setTimeout(renderNextStep, stepDuration);
     };
 
     renderNextStep();

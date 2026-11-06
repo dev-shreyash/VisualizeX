@@ -2,6 +2,8 @@ import { db } from "@/app/lib/database/database";
 import { z } from "zod";
 import { usernameValidation } from "@/schemas/signUpSchema";
 
+export const dynamic = "force-dynamic";
+
 const UsernameQuerySchema = z.object({
   username: usernameValidation,
 });

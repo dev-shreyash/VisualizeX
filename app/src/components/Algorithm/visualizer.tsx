@@ -32,9 +32,20 @@ export default function Visualizer({
   const [sortingComplete, setSortingComplete] = useState(false);
   const [sortingTime, setSortingTime] = useState<number | null>(null); // State to store sorting time
   const [isPausedState, setIsPausedState] = useState(isPaused); // State to store isPaused state
+  const stepIndexRef = useRef<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     setSortingComplete(false);
-  }, [userData]);
+    stepIndexRef.current = 0;
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, [userData, algorithm.key]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     setSortingTime(null);
@@ -342,14 +353,21 @@ export default function Visualizer({
       svg.selectAll(".pivot").remove();
     };
 
-    let stepIndex = 0;
-
-   
     const renderStep = () => {
-      if (isPausedState || !sorting) return;
-      console.log(isPausedState)
+      if (isPausedState || !sorting || currentSteps.length === 0) return;
 
-      const step = currentSteps[stepIndex];
+      const idx = stepIndexRef.current;
+      if (idx >= currentSteps.length) {
+        setSorting(false);
+        setSortingComplete(true);
+        const endTime = Date.now();
+        const elapsedTime =
+          (endTime - (startTimeRef.current ?? endTime)) / 1000;
+        setSortingTime(elapsedTime);
+        return;
+      }
+
+      const step = currentSteps[idx];
       renderArrayWithValues({
         data: step.array,
         currentLeftIndex: step.currentLeftIndex,
@@ -360,14 +378,14 @@ export default function Visualizer({
         sorted: step.sorted ?? undefined,
       });
 
-      stepIndex++;
+      stepIndexRef.current = idx + 1;
 
-      if (stepIndex < currentSteps.length && !isPausedState) {
+      if (stepIndexRef.current < currentSteps.length && !isPausedState) {
         const stepDuration =
           speed === 1 ? 0 : speed === 0.75 ? 150 : speed === 0.5 ? 300 : speed === 0.25 ? 600 : 3600;
 
-        setTimeout(renderStep, stepDuration);
-      } else {
+        timerRef.current = setTimeout(renderStep, stepDuration);
+      } else if (stepIndexRef.current >= currentSteps.length) {
         setSorting(false);
         setSortingComplete(true);
         const endTime = Date.now();
@@ -377,10 +395,15 @@ export default function Visualizer({
       }
     };
 
-    if (sorting) {
-
+    if (isPausedState) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    } else if (sorting) {
       renderStep();
     }
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [currentSteps, isPausedState, sorting, speed]);
 
   return (

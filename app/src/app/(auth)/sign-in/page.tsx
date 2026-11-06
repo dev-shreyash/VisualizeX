@@ -18,12 +18,11 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { signInSchema } from "@/schemas/signInSchema";
 import { Loader2, RefreshCcw } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 import { useSearchParams } from "next/navigation";
-  import { useEffect } from "react";
 
-export default function SignInForm() {
+function SignInFormContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchParams = useSearchParams();
@@ -165,5 +164,13 @@ export default function SignInForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInForm() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-slate-200">Loading sign in...</div>}>
+      <SignInFormContent />
+    </Suspense>
   );
 }

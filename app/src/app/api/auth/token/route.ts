@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, res: NextResponse) {
-  const getCookies = cookies()
-  const nextAuthSession = getCookies.get('next-auth.session-token')?.value || ''
-
-  return NextResponse.json(nextAuthSession)
+export async function GET() {
+  return NextResponse.json(
+    { error: "Endpoint deprecated for security reasons" },
+    { status: 404 }
+  );
 }

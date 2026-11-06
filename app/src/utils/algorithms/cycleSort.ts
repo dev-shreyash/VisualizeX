@@ -1,74 +1,86 @@
-interface SortStep {
-    array: number[];
-    currentLeftIndex?: number;
-    currentRightIndex?: number;
-    comparison?: [number, number];
-    swapped?: [number, number];
-    sorted?: boolean;
+export interface SortStep {
+  array: number[];
+  currentLeftIndex?: number;
+  currentRightIndex?: number;
+  comparison?: [number, number];
+  swapped?: [number, number];
+  sorted?: boolean;
+}
+
+export function cycleSort(array: number[]): SortStep[] {
+  const steps: SortStep[] = [];
+  const arr = [...array];
+  const n = arr.length;
+
+  if (n <= 1) {
+    steps.push({ array: [...arr], sorted: true });
+    return steps;
   }
-  
-  export function cycleSort(array: number[]): SortStep[] {
-    const steps: SortStep[] = [];
-    const arr = [...array]; // Clone the array to avoid mutating the original
-  
-    const n = arr.length;
-  
-    // Perform Cycle Sort
-    for (let cycleStart = 0; cycleStart < n - 1; cycleStart++) {
-      let item = arr[cycleStart];
-  
-      // Find the position where we put the element
-      let pos = cycleStart;
+
+  for (let cycleStart = 0; cycleStart < n - 1; cycleStart++) {
+    let item = arr[cycleStart];
+    let pos = cycleStart;
+
+    for (let i = cycleStart + 1; i < n; i++) {
+      steps.push({
+        array: [...arr],
+        currentLeftIndex: cycleStart,
+        currentRightIndex: i,
+        comparison: [cycleStart, i],
+      });
+      if (arr[i] < item) {
+        pos++;
+      }
+    }
+
+    if (pos === cycleStart) continue;
+
+    while (item === arr[pos]) {
+      pos++;
+    }
+
+    if (pos !== cycleStart) {
+      const temp = arr[pos];
+      arr[pos] = item;
+      item = temp;
+      steps.push({
+        array: [...arr],
+        currentLeftIndex: cycleStart,
+        currentRightIndex: pos,
+        swapped: [cycleStart, pos],
+      });
+    }
+
+    while (pos !== cycleStart) {
+      pos = cycleStart;
       for (let i = cycleStart + 1; i < n; i++) {
         if (arr[i] < item) {
           pos++;
         }
       }
-  
-      // If the element is already in the correct position
-      if (pos === cycleStart) continue;
-  
-      // Otherwise, put the element to the correct position
+
       while (item === arr[pos]) {
         pos++;
       }
-      [arr[pos], item] = [item, arr[pos]];
-  
-      steps.push({
-        array: [...arr],
-        swapped: [pos, cycleStart],
-      });
-  
-      // Rotate the remaining elements
-      while (pos !== cycleStart) {
-        pos = cycleStart;
-  
-        // Find the position of the element
-        for (let i = cycleStart + 1; i < n; i++) {
-          if (arr[i] < item) {
-            pos++;
-          }
-        }
-  
-        // Put the element to the correct position
-        while (item === arr[pos]) {
-          pos++;
-        }
-        [arr[pos], item] = [item, arr[pos]];
-  
+
+      if (item !== arr[pos]) {
+        const temp = arr[pos];
+        arr[pos] = item;
+        item = temp;
         steps.push({
           array: [...arr],
-          swapped: [pos, cycleStart],
+          currentLeftIndex: cycleStart,
+          currentRightIndex: pos,
+          swapped: [cycleStart, pos],
         });
       }
     }
-  
-    // Final sorted state
-    steps.push({
-      array: [...arr],
-      sorted: true,
-    });
-  
-    return steps;
   }
-  
+
+  steps.push({
+    array: [...arr],
+    sorted: true,
+  });
+
+  return steps;
+}

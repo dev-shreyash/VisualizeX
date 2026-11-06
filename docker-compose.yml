@@ -1,0 +1,109 @@
+# ==============================================================================
+# VisualizeX Backend Services - Docker Compose Configuration (VPS Deployment)
+#
+# Dedicated deployment stack for the Elysia.js / Bun execution worker,
+# Caddy HTTPS reverse proxy, and MongoDB storage on a Linux VPS.
+# (Frontend /app runs separately on Vercel)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Reverse Proxy (Caddy with automatic TLS via Let's Encrypt)
+  # ----------------------------------------------------------------------------
+  reverse-proxy:
+    image: caddy:2.8-alpine
+    container_name: visualizex-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:-${DOMAIN:-localhost}}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      visualizex-api:
+        condition: service_healthy
+    networks:
+      - visualizex-network
+
+  # ----------------------------------------------------------------------------
+  # 2. Execution Worker & Code API (Elysia.js / Bun Backend)
+  # ----------------------------------------------------------------------------
+  visualizex-api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: visualizex-api:latest
+    container_name: visualizex-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGODB_URL: ${MONGODB_URL:-mongodb://mongo:27017/CODES}
+      MONGODB_DB_NAME: ${MONGODB_DB_NAME:-CODES}
+      MONGODB_CODE_COLLECTION: ${MONGODB_CODE_COLLECTION:-users}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      REQUIRE_S2S_AUTH: ${REQUIRE_S2S_AUTH:-true}
+      MAX_CONCURRENT: ${MAX_CONCURRENT:-5}
+      EXECUTION_TIMEOUT_MS: ${EXECUTION_TIMEOUT_MS:-3000}
+      HOST_WORKSPACE_PATH: ${HOST_WORKSPACE_PATH:-/tmp/visualizex-workspaces}
+      RUNNER_IMAGE: ${RUNNER_IMAGE:-visualizex-runner:latest}
+      CLIENT_URL: ${CLIENT_URL:-*}
+    volumes:
+      # Docker daemon socket (use rootless socket /run/user/<UID>/docker.sock on VPS)
+      - ${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+      # Shared host workspace mounted identically inside worker container
+      - ${HOST_WORKSPACE_PATH:-/tmp/visualizex-workspaces}:${HOST_WORKSPACE_PATH:-/tmp/visualizex-workspaces}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - visualizex-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ----------------------------------------------------------------------------
+  # 3. MongoDB Database (Saved User Code Persistence)
+  # (Can be omitted or stopped if connecting directly to MongoDB Atlas)
+  # ----------------------------------------------------------------------------
+  mongo:
+    image: mongo:7.0
+    container_name: visualizex-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - visualizex-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes
+# ------------------------------------------------------------------------------
+volumes:
+  mongo_data:
+    name: visualizex_mongo_data
+  caddy_data:
+    name: visualizex_caddy_data
+  caddy_config:
+    name: visualizex_caddy_config
+
+# ------------------------------------------------------------------------------
+# Isolated Application Network
+# ------------------------------------------------------------------------------
+networks:
+  visualizex-network:
+    name: visualizex_network
+    driver: bridge
